@@ -1,6 +1,6 @@
-/* ── App Shell — Modern Fintech Sidebar + Top Bar + Smooth View Transitions ── */
+/* ── App Shell — Modern Fintech Sidebar + Top Bar + Live Dynamic Telemetry ── */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,13 +14,14 @@ import {
   ShieldCheck,
   Cpu,
   Radio,
+  Clock,
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import AuditPage from './pages/AuditPage';
 import { PolicyStudioPage } from './pages/PolicyStudioPage';
 import { SimulatorPage } from './pages/SimulatorPage';
 import { StorefrontModal } from './components/StorefrontModal';
-import { useAgentStatus } from './api/client';
+import { useAgentStatus, useMerchantConfig } from './api/client';
 import { RecoveryToast } from './components/RecoveryToast';
 
 const queryClient = new QueryClient({
@@ -34,9 +35,35 @@ const queryClient = new QueryClient({
 
 type Page = 'dashboard' | 'simulator' | 'policy' | 'audit';
 
+function LiveClock() {
+  const [timeStr, setTimeStr] = useState<string>('');
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      setTimeStr(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="hidden xl:flex items-center gap-1.5 bg-[#182234] border border-[#222F46] px-2.5 py-1 rounded-[6px] text-[11px] font-mono text-[#94A3B8]">
+      <Clock className="w-3 h-3 text-[#38BDF8]" />
+      <span>{timeStr}</span>
+    </div>
+  );
+}
+
 function AgentIndicator() {
-  const { data } = useAgentStatus();
-  const isRunning = Boolean(data?.is_running || (data?.queue_size && data.queue_size > 0));
+  const { data: agentStatus } = useAgentStatus();
+  const { data: configs } = useMerchantConfig();
+
+  const pollConfig = configs?.find((c) => c.key === 'agent_poll_interval');
+  const pollInterval = pollConfig?.value || agentStatus?.poll_interval_seconds || 30;
+
+  const isRunning = Boolean(agentStatus?.is_running || (agentStatus?.queue_size && agentStatus.queue_size > 0));
 
   return (
     <div className="flex flex-col gap-1">
@@ -58,13 +85,13 @@ function AgentIndicator() {
 
       {isRunning ? (
         <span className="text-[10px] font-mono text-[#38BDF8] pl-4">
-          {data?.current_batch_id
-            ? `Recovering ${data.current_batch_id.slice(0, 10)}...`
-            : `${data?.queue_size || 1} in queue`}
+          {agentStatus?.current_batch_id
+            ? `Recovering ${agentStatus.current_batch_id.slice(0, 10)}...`
+            : `${agentStatus?.queue_size || 1} in queue`}
         </span>
       ) : (
         <span className="text-[10px] text-[#566782] pl-4">
-          Polling stream (30s)
+          Polling stream ({pollInterval}s)
         </span>
       )}
     </div>
@@ -74,6 +101,18 @@ function AgentIndicator() {
 function AppContent() {
   const [page, setPage] = useState<Page>('dashboard');
   const [isStorefrontOpen, setIsStorefrontOpen] = useState(false);
+
+  const { data: configs } = useMerchantConfig();
+  const pollConfig = configs?.find((c) => c.key === 'agent_poll_interval')?.value || '30';
+  const retryConfig = configs?.find((c) => c.key === 'max_retry_attempts')?.value || '2';
+  const llmConfig = configs?.find((c) => c.key === 'llm_provider')?.value || 'openrouter/minimax';
+
+  const formatLlmName = (val: string) => {
+    if (val.includes('minimax')) return 'MiniMax M3 Free';
+    if (val.includes('claude')) return 'Claude 3.5 Sonnet';
+    if (val.includes('gemini')) return 'Gemini 1.5 Pro';
+    return val;
+  };
 
   return (
     <div className="app-layout">
@@ -171,7 +210,7 @@ function AppContent() {
               <Heart size={10} className="text-[#EF4444]" />
               <span>Razorpay Buildathon</span>
             </div>
-            <span className="font-mono">v2.0</span>
+            <span className="font-mono">v3.0</span>
           </div>
         </div>
       </aside>
@@ -210,18 +249,20 @@ function AppContent() {
           </div>
 
           {/* Right Status Indicators */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <LiveClock />
+
             <div className="hidden sm:flex items-center gap-2 bg-[#182234] border border-[#222F46] px-2.5 py-1 rounded-[6px] text-[11px] font-mono text-[#94A3B8]">
               <Radio className="w-3 h-3 text-[#10B981] animate-pulse" />
-              <span>Razorpay Testnet</span>
+              <span>Poll: {pollConfig}s</span>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-[#182234] border border-[#222F46] px-2.5 py-1 rounded-[6px] text-[11px] font-mono text-[#94A3B8]">
               <Cpu className="w-3 h-3 text-[#38BDF8]" />
-              <span>MiniMax M3 Free</span>
+              <span>{formatLlmName(llmConfig)}</span>
             </div>
             <div className="hidden lg:flex items-center gap-2 bg-[#182234] border border-[#222F46] px-2.5 py-1 rounded-[6px] text-[11px] font-mono text-[#94A3B8]">
               <ShieldCheck className="w-3 h-3 text-[#10B981]" />
-              <span>Guardrails: 2 Retries Max</span>
+              <span>Max {retryConfig} Retries</span>
             </div>
 
             {/* Quick Trigger Storefront Demo Header Button */}

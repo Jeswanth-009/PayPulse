@@ -3,10 +3,6 @@ import {
   Smartphone,
   Sparkles,
   Search,
-  Zap,
-  CreditCard,
-  Clock,
-  ShoppingBag,
   Send,
 } from 'lucide-react';
 import { PhoneSimulator } from '../components/PhoneSimulator';
@@ -99,16 +95,18 @@ export const SimulatorPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#222F46] pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Smartphone className="w-5 h-5 text-[#38BDF8]" />
-            <h1 className="text-[#F0F6FC] text-[20px] font-bold tracking-tight">
-              Customer Recovery Simulator
+            <div className="w-8 h-8 rounded-[8px] bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center">
+              <Smartphone className="w-4 h-4 text-[#10B981]" />
+            </div>
+            <h1 className="text-[#F0F6FC] text-[22px] font-bold tracking-tight">
+              Customer Experience Simulator Studio
             </h1>
-            <span className="text-[11px] bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 px-2 py-0.5 rounded-[4px] font-mono font-semibold">
-              Live Preview
+            <span className="text-[10px] bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 px-2 py-0.5 rounded-[4px] font-mono font-bold">
+              WhatsApp & SMS Engine
             </span>
           </div>
           <p className="text-[#94A3B8] text-[13px]">
-            Experience exactly what end-customers receive on WhatsApp & SMS when PayPulse autonomously recovers failed checkouts.
+            Inspect end-customer WhatsApp and SMS recovery messages generated autonomously by MiniMax M3.
           </p>
         </div>
 
@@ -118,65 +116,56 @@ export const SimulatorPage: React.FC = () => {
             <Search className="w-3.5 h-3.5 absolute left-3 text-[#566782]" />
             <input
               type="text"
+              placeholder="Lookup by payment ID..."
               value={searchPaymentId}
               onChange={(e) => setSearchPaymentId(e.target.value)}
-              placeholder="Lookup Payment ID..."
-              className="bg-[#101623] border border-[#222F46] text-[#F0F6FC] text-[12px] pl-8 pr-3 py-1.5 rounded-[6px] font-mono focus:outline-none focus:border-[#38BDF8] w-[200px]"
+              className="bg-[#101623] border border-[#222F46] text-[#F0F6FC] pl-8 pr-3 py-1.5 rounded-[6px] text-[12px] font-mono focus:outline-none focus:border-[#38BDF8] w-[220px]"
             />
           </div>
-          <button
-            type="submit"
-            className="btn btn-secondary text-[12px] py-1.5 px-3"
-          >
+          <button type="submit" className="btn btn-secondary py-1.5 px-3 text-[12px]">
             Lookup
           </button>
         </form>
       </div>
 
-      {/* Main Grid: Left Controls / Scenarios + Right Smartphone */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left 7 Cols: Interactive Scenario Selector & Telemetry */}
-        <div className="lg:col-span-7 space-y-4">
-          {/* Preset Scenario Cards */}
+      {/* Main Grid: Left Scenarios & Controls (7 cols) + Right Phone View (5 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left 7 Cols */}
+        <div className="lg:col-span-7 space-y-5">
+          {/* Preset Scenario Selector */}
           <div>
-            <span className="text-[#94A3B8] text-[11px] font-bold uppercase tracking-wider block mb-2">
-              Select Failure Scenario to Test
+            <span className="text-[#94A3B8] text-[12px] font-bold uppercase tracking-wider block mb-3">
+              Preset Recovery Failure Scenarios
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {DEMO_SCENARIOS.map((scenario, idx) => {
-                const isSelected = activePaymentId === null && selectedScenarioIndex === idx;
-                const icons = [Zap, Clock, CreditCard, ShoppingBag];
-                const Icon = icons[idx % icons.length];
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {DEMO_SCENARIOS.map((sc, idx) => {
+                const isSelected = !activePaymentId && selectedScenarioIndex === idx;
                 return (
                   <button
-                    key={scenario.payment_id}
+                    key={sc.id}
                     type="button"
                     onClick={() => handleSelectScenario(idx)}
-                    className={`text-left p-3 rounded-[8px] border transition-all ${
+                    className={`p-3.5 rounded-[10px] text-left border transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#182234] border-[#38BDF8] shadow-md shadow-[#38BDF8]/10'
-                        : 'bg-[#101623] border-[#222F46] hover:border-[#566782] hover:bg-[#182234]/50'
+                        ? 'bg-[#182234] border-[#38BDF8] shadow-md shadow-[#38BDF8]/10 ring-1 ring-[#38BDF8]'
+                        : 'bg-[#101623] border-[#222F46] hover:border-[#566782] hover:bg-[#182234]/40'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#38BDF8]' : 'text-[#94A3B8]'}`} />
-                        <span className="text-[#F0F6FC] text-[13px] font-semibold truncate">
-                          {scenario.customer_name}
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-mono text-[#10B981] font-bold">
-                        ₹{scenario.amount_rupees?.toLocaleString('en-IN')}
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-[13px] text-[#F0F6FC]">
+                        {sc.customer_name}
+                      </span>
+                      <span className="font-mono text-[12px] text-[#10B981] font-bold">
+                        ₹{(sc.amount_rupees || 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                     <p className="text-[#94A3B8] text-[11px] line-clamp-2 leading-relaxed">
-                      {scenario.personalization_note}
+                      {sc.personalization_note}
                     </p>
-                    <div className="flex items-center gap-2 mt-2 pt-1 border-t border-[#222F46]/60 text-[10px] font-mono text-[#566782]">
-                      <span className="capitalize">{scenario.tone}</span>
+                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#1A2538] text-[10px] font-mono text-[#566782]">
+                      <span className="capitalize text-[#38BDF8]">{sc.tone} tone</span>
                       <span>·</span>
-                      <span className="text-[#38BDF8]">{scenario.payment_id}</span>
+                      <span>{sc.source.toUpperCase()}</span>
                     </div>
                   </button>
                 );
@@ -184,17 +173,17 @@ export const SimulatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* AI Copy Breakdown & Character Gauge */}
-          <div className="bg-[#101623] border border-[#222F46] rounded-[10px] p-4 space-y-4">
+          {/* AI Copy Guardrails & Character Gauge */}
+          <div className="bg-[#101623] border border-[#222F46] rounded-[10px] p-4 space-y-4 shadow-xl">
             <div className="flex items-center justify-between border-b border-[#1A2538] pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#38BDF8]" />
-                <span className="text-[#F0F6FC] text-[13px] font-semibold">
-                  AI Copy Guardrails & Telemetry
+                <span className="text-[#F0F6FC] text-[13px] font-bold">
+                  AI Guardrails & Copy Metrics
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded-[4px]">
-                Model: MiniMax M3 / Claude
+              <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded-[4px] border border-[#38BDF8]/20">
+                Model: MiniMax M3
               </span>
             </div>
 
@@ -202,13 +191,13 @@ export const SimulatorPage: React.FC = () => {
             <div>
               <div className="flex justify-between items-center text-[12px] mb-1">
                 <span className="text-[#94A3B8]">WhatsApp Message Length</span>
-                <span className="font-mono text-[#F0F6FC]">
+                <span className="font-mono text-[#F0F6FC] font-bold">
                   {currentMessage.whatsapp_message.length} / 300 chars
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-[#182234] rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-[#182234] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#128C7E] transition-all duration-300"
+                  className="h-full bg-[#128C7E] transition-all duration-300 rounded-full"
                   style={{ width: `${Math.min(100, (currentMessage.whatsapp_message.length / 300) * 100)}%` }}
                 />
               </div>
@@ -218,13 +207,13 @@ export const SimulatorPage: React.FC = () => {
             <div>
               <div className="flex justify-between items-center text-[12px] mb-1">
                 <span className="text-[#94A3B8]">SMS Character Length (Hard GSM Limit)</span>
-                <span className="font-mono text-[#F0F6FC]">
+                <span className="font-mono text-[#F0F6FC] font-bold">
                   {currentMessage.sms_message.length} / 160 chars
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-[#182234] rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-[#182234] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#3B82F6] transition-all duration-300"
+                  className="h-full bg-[#3B82F6] transition-all duration-300 rounded-full"
                   style={{ width: `${Math.min(100, (currentMessage.sms_message.length / 160) * 100)}%` }}
                 />
               </div>
@@ -253,10 +242,10 @@ export const SimulatorPage: React.FC = () => {
                     key={entry.id}
                     type="button"
                     onClick={() => setActivePaymentId(entry.payment_id)}
-                    className="w-full p-2.5 flex items-center justify-between text-left hover:bg-[#182234] transition-colors"
+                    className="w-full p-2.5 flex items-center justify-between text-left hover:bg-[#182234] transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-[#F0F6FC] font-mono text-[11px]">
+                      <span className="text-[#F0F6FC] font-mono text-[11px] font-semibold">
                         {entry.payment_id}
                       </span>
                       <span className="text-[#94A3B8] text-[11px]">
@@ -274,10 +263,10 @@ export const SimulatorPage: React.FC = () => {
         </div>
 
         {/* Right 5 Cols: Smartphone Device Simulator */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center bg-[#101623]/80 border border-[#222F46] rounded-[14px] p-6 shadow-xl relative backdrop-blur-md">
-          <div className="absolute top-3 left-4 flex items-center gap-1.5 text-[11px] font-mono text-[#566782]">
-            <Send className="w-3 h-3 text-[#10B981]" />
-            <span>Interactive Device View</span>
+        <div className="lg:col-span-5 flex flex-col items-center justify-center bg-[#101623]/90 border border-[#222F46] rounded-[16px] p-6 shadow-2xl relative backdrop-blur-xl">
+          <div className="absolute top-4 left-5 flex items-center gap-1.5 text-[11px] font-mono text-[#566782]">
+            <Send className="w-3.5 h-3.5 text-[#10B981]" />
+            <span>Interactive Device Simulation</span>
           </div>
 
           <PhoneSimulator messageData={currentMessage} />

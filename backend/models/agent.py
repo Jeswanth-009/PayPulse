@@ -40,3 +40,4 @@ class AgentStatus(BaseModel):
     total_processed: int = 0
     current_batch_id: Optional[str] = None
     uptime_seconds: float = 0
+    poll_interval_seconds: int = 30

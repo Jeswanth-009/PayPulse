@@ -31,6 +31,7 @@ class PaymentMonitor:
         self.queue_size = 0
         self.total_processed = 0
         self.current_batch_id: Optional[str] = None
+        self.poll_interval: int = settings.AGENT_POLL_INTERVAL_SECONDS
         self._start_time = time.time()
         self._lock = asyncio.Lock()
 
@@ -43,6 +44,7 @@ class PaymentMonitor:
             total_processed=self.total_processed,
             current_batch_id=self.current_batch_id,
             uptime_seconds=time.time() - self._start_time,
+            poll_interval_seconds=self.poll_interval,
         )
 
     async def run_agent_loop(self, batch_id: Optional[str] = None):

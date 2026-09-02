@@ -60,6 +60,7 @@ export interface AgentStatus {
   total_processed: number;
   current_batch_id: string | null;
   uptime_seconds: number;
+  poll_interval_seconds?: number;
 }
 
 export interface BatchRunRequest {
