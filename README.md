@@ -2,7 +2,7 @@
 ### Autonomous AI Payment Failure Recovery Agent · Razorpay AI Buildathon 2026
 
 > **Detect. Decide. Recover.**  
-> PayPulse intercepts checkout failures across Razorpay payment streams in $< 2$ seconds, diagnoses the root cause using OpenRouter (`minimax/minimax-m3:free`) or Claude, autonomously creates personalized WhatsApp / SMS recovery links, and saves lost GMV with measurable ROI.
+> PayPulse intercepts checkout dropouts across Razorpay payment streams in $< 2$ seconds, diagnoses the root cause using OpenRouter (`minimax/minimax-m3:free`) or Claude, autonomously creates personalized WhatsApp / SMS recovery links, and reclaims lost GMV with zero customer fatigue.
 
 ---
 
@@ -27,29 +27,32 @@ flowchart TD
     L --> M[SQLite Audit Trail + Real-Time Telemetry]
 ```
 
-### 1. 🛍️ End-to-End Storefront Checkout Demo (Closed Loop)
-- **Live Simulated E-Commerce Store:** Experience a real purchase from the buyer's perspective.
-- **1-Click Failure Simulator:** Trigger real-world failure scenarios (*Bank Gateway Timeout*, *UPI PSP Dropout*, *Card Issuer Decline*).
-- **Autonomous Interception:** The agent intercepts the dropout within 1.5s, diagnoses the failure, and delivers a WhatsApp recovery message directly to the customer's phone simulator.
-- **1-Click Pay Resolution:** Simulate the customer completing the recovery link and watch the dashboard metrics and money saved count update live!
+### 1. 🛍️ Luxury E-Commerce Storefront Demo (Closed Loop)
+- **Flagship Audio & Tech Catalog:** Test authentic purchases (*Titanium Apex Smartwatch Pro*, *SonicPro Spatial ANC Headphones*, *UrbanCraft Nomad Backpack*).
+- **1-Click Failure Sandbox:** Trigger real-world failure conditions (*Bank Gateway Timeout*, *UPI PSP Dropout*, *Card Issuer Decline*).
+- **Sub-2s Autonomous Interception:** The agent intercepts the dropout within 1.5s, diagnoses the failure, and delivers a WhatsApp recovery message directly to the customer's phone simulator.
+- **1-Click Customer Payment Resolution:** Simulate the customer completing the recovery link and watch the live telemetry, revenue projections, and Audit Trail update instantaneously!
 
-### 2. 📱 Customer Recovery Experience & Phone Simulator
-- **High-Definition Smartphone Preview:** Dynamic iOS/Android frame with notch and status bar.
-- **WhatsApp & iOS SMS Cross-Fade:** Switch seamlessly between WhatsApp business messages with formatted payment links and native iOS Messages.
-- **Empathetic AI Copy Generator:** Produces conversational Hinglish / English messages with personalized customer names and rupee amounts, strictly adhering to guardrails ($\le 300$ chars for WhatsApp, $\le 160$ chars for SMS).
+### 2. 📱 Smartphone Recovery Experience & Phone Simulator
+- **iPhone 16 Pro Frame:** Realistic titanium bezel with Dynamic Island notch pill, live status bar (time, WiFi, battery), and authentic WhatsApp chat bubble styling with double blue ticks (`✓✓`).
+- **Empathetic AI Copy Generator:** Produces conversational Hinglish / English messages with personalized customer names and rupee amounts, strictly adhering to character guardrails ($\le 300$ chars for WhatsApp, $\le 160$ chars for SMS).
+- **1-Click Resolution Action:** Direct **`⚡ Simulate Customer Paying Link`** button with confirmation feedback.
 
-### 3. 🧪 Failure Studio Sandbox
-- **Instant Error Injector:** Test presets (*Bank Timeout*, *UPI Dropped*, *Card Declined*, *High-Value Basket*) or build custom payloads.
-- **Synchronous Diagnostic Execution:** Creates real Razorpay test orders, classifies via LLM, mints live payment links (`https://rzp.io/...`), and returns full diagnostic audit records.
+### 3. 🎛️ Merchant Policy & Guardrails Studio (v3.0)
+- **One-Click Policy Templates:**
+  - ⚖️ **Balanced E-Commerce** *(Max 2 retries, ₹10k escalation, 15s poll)*
+  - ⚡ **High-Velocity Blitz** *(Max 3 retries, ₹25k escalation, 10s poll)*
+  - 🛡️ **VIP Conservative** *(Max 1 retry, ₹5k escalation, 30s poll)*
+- **Live Dynamic Stream Polling Rescheduling:** Changing the stream polling interval immediately reschedules APScheduler in the backend and updates the UI in real time.
+- **Strict Stopping Rule Safeguards:** Halts recovery after configured attempts to prevent customer harassment.
 
-### 4. 🎛️ Merchant Policy Studio
-- **Configurable Guardrails:** Adjust `max_retry_attempts` (1–3), `escalation_threshold` (₹1,000–₹100,000), `llm_provider` (OpenRouter / Claude / Rule Fallback), and `agent_poll_interval` with instant runtime persistence.
+### 4. ⚡ Autonomous Batch Recovery Pipeline
+- **Volume & Failure Controllers:** One-click order pills (`[10]`, `[25]`, `[50]`, `[100]`) and dynamic failure rate slider.
+- **Live 4-Step Stepper Pipeline:** *1. Orders Seeded $\rightarrow$ 2. Failures Flagged $\rightarrow$ 3. AI Diagnosis (M3) $\rightarrow$ 4. Links Dispatched*.
+- **Comprehensive Post-Run Report:** Real-time breakdown of recovery conversion and total GMV saved.
 
-### 5. 💰 Merchant ROI Calculator
+### 5. 💰 Projected Revenue Recovery & Annual ROI Model
 - **Logarithmic GMV Slider:** Models revenue recovery from ₹10 Lakhs to ₹100 Crores/month based on RBI's 7.5% baseline failure rate and live agent recovery telemetry.
-
-### 6. 🔔 Real-Time Recovery Notifications & Toast Feed
-- Live floating toasts in the top-right corner alert merchants when a payment is recovered with 1-click inspection.
 
 ---
 
@@ -124,18 +127,22 @@ pytest -v
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/v1/batch/run` | Seeds orders via Razorpay test mode and runs autonomous recovery |
+| `POST` | `/api/v1/batch/run` | Seeds orders via Razorpay test mode and runs autonomous recovery pipeline |
 | `GET` | `/api/v1/batch/{batch_id}/report` | Aggregated recovery rate, money at risk, and failure breakdown |
 | `POST` | `/api/v1/studio/fire` | Synchronously fires preset/custom failure through the agent pipeline |
 | `GET` | `/api/v1/studio/presets` | List of quick failure presets |
 | `GET` | `/api/v1/payments/{payment_id}/message` | Customer-facing WhatsApp & SMS recovery copy and rationale |
 | `POST` | `/api/v1/payments/{payment_id}/simulate-pay` | Simulates customer completing the recovery link and captures payment |
 | `GET` | `/api/v1/config` | Fetches runtime merchant policy configuration |
-| `PUT` | `/api/v1/config/{key}` | Updates merchant policy setting with range validation |
-| `GET` | `/api/v1/audit` | Paginated audit trail of all agent decisions and outcomes |
+| `PUT` | `/api/v1/config/{key}` | Updates merchant policy setting with live APScheduler rescheduling |
+| `GET` | `/api/v1/agent/status` | Real-time agent status, active queue, and live polling interval |
+| `GET` | `/api/v1/audit` | Paginated immutable audit trail of all agent decisions and outcomes |
 | `POST` | `/webhook/razorpay` | Ingests live Razorpay webhooks with HMAC-SHA256 signature verification |
 
 ---
 
 ## 🏆 Razorpay AI Buildathon 2026 Submission
-Built with ❤️ for Indian E-Commerce merchants losing crores to payment dropouts every month.
+
+- **Repository:** [https://github.com/Jeswanth-009/PayPulse](https://github.com/Jeswanth-009/PayPulse)
+- **Demo Walkthrough & Video Script:** See [`DEMO_GUIDE.md`](file:///c:/PayPulse/DEMO_GUIDE.md)
+- **Engineering Post-Mortem & Fixes:** See [`WHAT_BROKE.md`](file:///c:/PayPulse/WHAT_BROKE.md)

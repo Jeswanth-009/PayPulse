@@ -1,6 +1,6 @@
 # What Broke (and What I Did About It)
 
-> Running notes from the PayPulse build — genuine engineering debugging sessions and real fixes.
+> Running notes from the PayPulse build — genuine engineering debugging sessions, root-cause analyses, and real fixes.
 
 ---
 
@@ -146,3 +146,59 @@ The backend `BatchReport` returns formatted recovery rate strings (e.g. `"66.67%
 
 **What fixed it:**
 Implemented regex sanitization `parseFloat(batchReport.recovery_rate.replace('%', '')) / 100` with fallback to `0.60`, cleanly feeding into the logarithmic GMV slider math.
+
+---
+
+## Issue #9: Dynamic APScheduler Rescheduling on Policy Studio Interval Updates
+
+**What I was trying to do:**
+Allow merchants to change the agent stream polling interval (e.g. from 30s to 15s or 10s) in Policy Studio, expecting the background agent worker to adjust its polling velocity immediately.
+
+**What actually happened:**
+While the updated interval was saved in SQLite, APScheduler remained on the startup interval (`settings.AGENT_POLL_INTERVAL_SECONDS = 30`), and the sidebar telemetry indicator remained static.
+
+**How long it took to diagnose:**
+2 minutes (verified runtime logs after changing slider).
+
+**What fixed it:**
+In `backend/routers/config.py`, hooked into the `agent_poll_interval` update handler to dynamically call `scheduler.reschedule_job("payment_monitor", trigger="interval", seconds=new_interval)` and update `payment_monitor.poll_interval`. Added `poll_interval_seconds` to `AgentStatus` so the UI reflects the live interval instantly across all components.
+
+---
+
+## Issue #10: Cross-Browser SQLite ISO Timestamp Parsing
+
+**What I was trying to do:**
+Display the decision execution time in the Live Agent Feed (`format(new Date(entry.created_at), 'HH:mm:ss')`).
+
+**What actually happened:**
+SQLite's `CURRENT_TIMESTAMP` generates dates formatted as `"YYYY-MM-DD HH:MM:SS"` without a timezone offset or standard `"T"` delimiter. On strict browsers (Safari, iOS WebKit), `new Date("2026-09-02 08:30:00")` returned `Invalid Date`, causing the feed to display broken timestamps or throw a `RangeError`.
+
+**How long it took to diagnose:**
+2 minutes (reproduced during client-side testing).
+
+**What fixed it:**
+Implemented a robust `formatSafeTime` helper that converts spaces to `"T"`, appends `"Z"` UTC identifiers, and gracefully falls back to substring slicing if parsing fails:
+```typescript
+function formatSafeTime(dateStr?: string | null): string {
+  if (!dateStr) return '--:--:--';
+  const cleanStr = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+  const d = new Date(cleanStr.endsWith('Z') ? cleanStr : cleanStr + 'Z');
+  return isNaN(d.getTime()) ? dateStr.slice(11, 19) || '--:--:--' : d.toLocaleTimeString([], { hour12: false });
+}
+```
+
+---
+
+## Issue #11: Recharts ResponsiveContainer Collisions in Fixed-Height Flex Boxes
+
+**What I was trying to do:**
+Nest `PaymentChart`, `FailureBreakdown`, and `RecoveryDonut` inside fixed `h-[480px]` and `h-[210px]` containers alongside `AgentFeed`.
+
+**What actually happened:**
+Because each Recharts `ResponsiveContainer` had hardcoded `height={200}`, the combined padding and headers caused the SVG canvas to exceed parent bounds, vertically overlapping the ROI Calculator below.
+
+**How long it took to diagnose:**
+3 minutes (inspected DOM box models in browser).
+
+**What fixed it:**
+Migrated `Dashboard.tsx` to a responsive 12-column grid (`lg:col-span-7` for Agent Feed + `lg:col-span-5` for Visual Analytics). Assigned dedicated height wrappers (`h-[180px]` and `h-[150px]`) to Recharts charts, allowing the layout to grow naturally without rigid vertical clipping.
