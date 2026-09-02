@@ -8,8 +8,9 @@ import {
   ShieldCheck,
   AlertTriangle,
   MessageSquare,
+  Zap,
 } from 'lucide-react';
-import { usePayment, useRecoveryMessage } from '../api/client';
+import { usePayment, useRecoveryMessage, useSimulatePay } from '../api/client';
 import { PhoneSimulator } from './PhoneSimulator';
 
 interface PaymentDetailDrawerProps {
@@ -25,6 +26,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'classification' | 'recovery' | 'message'>(initialTab);
   const [copiedLink, setCopiedLink] = useState(false);
+  const simulatePay = useSimulatePay();
 
   React.useEffect(() => {
     if (initialTab) {
@@ -306,6 +308,23 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
                                 >
                                   <ExternalLink className="w-4 h-4" />
                                 </a>
+                              </div>
+
+                              {/* Simulate Payment Resolution Button */}
+                              <div className="mt-3">
+                                <button
+                                  type="button"
+                                  disabled={simulatePay.isPending}
+                                  onClick={() => simulatePay.mutate(paymentId)}
+                                  className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold text-[12px] py-2 px-3 rounded-[4px] flex items-center justify-center gap-1.5 transition-all shadow-md shadow-[#10B981]/20 cursor-pointer"
+                                >
+                                  <Zap className="w-3.5 h-3.5" />
+                                  <span>
+                                    {simulatePay.isPending
+                                      ? 'Capturing Payment...'
+                                      : '⚡ Simulate Customer Paying Link (Mark Recovered)'}
+                                  </span>
+                                </button>
                               </div>
                             </div>
                           )}

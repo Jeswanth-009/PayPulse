@@ -15,6 +15,7 @@ import AuditPage from './pages/AuditPage';
 import { PolicyStudioPage } from './pages/PolicyStudioPage';
 import { SimulatorPage } from './pages/SimulatorPage';
 import { useAgentStatus } from './api/client';
+import { RecoveryToast } from './components/RecoveryToast';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -174,6 +175,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppContent />
+      <RecoveryToast />
     </QueryClientProvider>
   );
 }

@@ -1,7 +1,7 @@
 /* ── Dashboard — Main view: Agent Feed + Metrics + ROI Calculator + Charts + Failure Studio ── */
 
 import { useState, useMemo } from 'react';
-import { FlaskConical, Smartphone } from 'lucide-react';
+import { FlaskConical, Smartphone, ShoppingBag } from 'lucide-react';
 import MetricCards from '../components/MetricCards';
 import AgentFeed from '../components/AgentFeed';
 import BatchRunner from '../components/BatchRunner';
@@ -11,6 +11,7 @@ import RecoveryDonut from '../components/RecoveryDonut';
 import { ROICalculator } from '../components/ROICalculator';
 import { FailureStudio } from '../components/FailureStudio';
 import { PaymentDetailDrawer } from '../components/PaymentDetailDrawer';
+import { StorefrontModal } from '../components/StorefrontModal';
 import { useAuditFeed, useAuditLog } from '../api/client';
 import type { FailureBreakdown as FailureBreakdownType } from '../types';
 
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const { data: allAudit } = useAuditLog({ event_type: 'action_taken', limit: 200 });
 
   const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [isStorefrontOpen, setIsStorefrontOpen] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
 
   // Compute metrics from audit feed
@@ -81,6 +83,14 @@ export default function Dashboard() {
           <BatchRunner />
         </div>
         <div className="shrink-0 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsStorefrontOpen(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-[#38BDF8] to-[#3B82F6] hover:from-[#0EA5E9] hover:to-[#2563EB] text-white font-bold text-[13px] py-2 px-4 rounded-[6px] shadow-lg shadow-[#38BDF8]/20 transition-all cursor-pointer"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>🛍️ Storefront Checkout Demo</span>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -150,6 +160,13 @@ export default function Dashboard() {
           setIsStudioOpen(false);
           setSelectedPaymentId(id);
         }}
+      />
+
+      {/* Interactive Storefront Modal Demo */}
+      <StorefrontModal
+        isOpen={isStorefrontOpen}
+        onClose={() => setIsStorefrontOpen(false)}
+        onOpenSimulator={(id) => setSelectedPaymentId(id)}
       />
 
       {/* Payment Inspector / Customer Experience Drawer */}

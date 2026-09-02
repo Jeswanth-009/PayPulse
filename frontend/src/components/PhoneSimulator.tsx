@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Signal, Wifi, Battery, ChevronLeft, MoreHorizontal, Sparkles, AlertTriangle } from 'lucide-react';
-import type { RecoveryMessage } from '../api/client';
+import { Signal, Wifi, Battery, ChevronLeft, MoreHorizontal, Sparkles, AlertTriangle, Zap, Loader2, Check } from 'lucide-react';
+import { useSimulatePay, type RecoveryMessage } from '../api/client';
 
 interface PhoneSimulatorProps {
   messageData: RecoveryMessage;
@@ -9,6 +9,19 @@ interface PhoneSimulatorProps {
 
 export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({ messageData }) => {
   const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
+  const [isPaid, setIsPaid] = useState(false);
+  const simulatePay = useSimulatePay();
+  const isPaying = simulatePay.isPending;
+
+  const handleSimulatePay = async () => {
+    if (!messageData.payment_id) return;
+    try {
+      await simulatePay.mutateAsync(messageData.payment_id);
+      setIsPaid(true);
+    } catch (err) {
+      console.error('Failed to simulate pay:', err);
+    }
+  };
 
   const parseMessageWithUrl = (text: string, isWhatsApp: boolean) => {
     // Regex to match URLs
@@ -201,8 +214,41 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({ messageData }) =
           </p>
         )}
 
+        {/* Simulate Customer Payment Action Button */}
+        {messageData.payment_id && (
+          <div className="pt-2">
+            <button
+              type="button"
+              disabled={isPaying || isPaid}
+              onClick={handleSimulatePay}
+              className={`w-full text-[12px] font-bold py-2 px-3 rounded-[6px] flex items-center justify-center gap-1.5 transition-all shadow-md ${
+                isPaid
+                  ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40'
+                  : 'bg-[#10B981] hover:bg-[#059669] text-white cursor-pointer shadow-[#10B981]/20'
+              }`}
+            >
+              {isPaid ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Payment Captured (Recovered)</span>
+                </>
+              ) : isPaying ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Capturing Payment...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4" />
+                  <span>Simulate Customer Paying Link</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
         <p className="text-[#484F58] text-[10px] pt-1">
-          Simulation only · Test mode · Not dispatched
+          Interactive Simulation · Razorpay Test Mode
         </p>
       </div>
     </div>

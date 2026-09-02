@@ -101,3 +101,46 @@ async def get_recovery_message(payment_id: str, db=Depends(get_db)):
             detail="No message for this payment. STOP and ESCALATE actions do not generate messages."
         )
     return dict(row)
+
+
+@router.post("/{payment_id}/simulate-pay")
+async def simulate_payment_completion(payment_id: str, db=Depends(get_db)):
+    """Simulate customer clicking and paying the recovery link, transitioning payment to 'captured' and 'recovered'."""
+    cursor = await db.execute("SELECT * FROM payments WHERE payment_id = ?", (payment_id,))
+    row = await cursor.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Payment not found")
+
+    payment = dict(row)
+    amount_paise = payment.get("amount_paise", 0)
+    order_id = payment.get("order_id", "")
+    customer_name = payment.get("customer_name") or "Customer"
+
+    # Update payment status
+    await db.execute(
+        "UPDATE payments SET status = 'captured', updated_at = CURRENT_TIMESTAMP WHERE payment_id = ?",
+        (payment_id,),
+    )
+    await db.commit()
+
+    # Log outcome in audit log
+    await audit_logger.log(
+        payment_id=payment_id,
+        event_type="outcome",
+        order_id=order_id,
+        amount_paise=amount_paise,
+        action_taken="RECOVERED",
+        outcome="recovered",
+        llm_reasoning=f"Customer {customer_name} completed payment via recovery link. Autonomous recovery succeeded.",
+    )
+
+    return {
+        "success": True,
+        "payment_id": payment_id,
+        "order_id": order_id,
+        "amount_paise": amount_paise,
+        "customer_name": customer_name,
+        "status": "captured",
+        "outcome": "recovered",
+        "message": f"Payment {payment_id} successfully recovered! ₹{amount_paise/100:,.2f} captured.",
+    }

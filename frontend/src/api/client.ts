@@ -41,6 +41,22 @@ export function usePayment(paymentId: string) {
   });
 }
 
+export function useSimulatePay() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentId: string) =>
+      api.post(`/api/v1/payments/${paymentId}/simulate-pay`).then(r => r.data),
+    onSuccess: (_, paymentId) => {
+      queryClient.invalidateQueries({ queryKey: ['payment', paymentId] });
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['audit'] });
+      queryClient.invalidateQueries({ queryKey: ['auditFeed'] });
+      queryClient.invalidateQueries({ queryKey: ['agentStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
+    },
+  });
+}
+
 /* ── Agent ── */
 export function useAgentStatus() {
   return useQuery<AgentStatus>({

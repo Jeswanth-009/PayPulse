@@ -92,3 +92,25 @@ async def test_get_recovery_message_endpoint(client: httpx.AsyncClient):
     """Verify GET /api/v1/payments/{id}/message returns 404 for unknown payments."""
     res = await client.get("/api/v1/payments/non_existent_payment_id/message")
     assert res.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_simulate_payment_completion(client: httpx.AsyncClient):
+    """Verify POST /api/v1/payments/{id}/simulate-pay transitions payment to captured and logs recovery."""
+    # First fire a studio failure to get a real payment ID
+    fire_res = await client.post("/api/v1/studio/fire", json={"preset": "bank_timeout"})
+    assert fire_res.status_code == 200
+    payment_id = fire_res.json()["payment_id"]
+
+    # Now simulate customer paying the link
+    pay_res = await client.post(f"/api/v1/payments/{payment_id}/simulate-pay")
+    assert pay_res.status_code == 200
+    data = pay_res.json()
+    assert data["success"] is True
+    assert data["status"] == "captured"
+    assert data["outcome"] == "recovered"
+
+    # Verify payment detail reflects captured
+    detail_res = await client.get(f"/api/v1/payments/{payment_id}")
+    assert detail_res.status_code == 200
+    assert detail_res.json()["payment"]["status"] == "captured"
