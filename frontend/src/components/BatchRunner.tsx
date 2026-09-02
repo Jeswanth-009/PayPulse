@@ -1,12 +1,12 @@
 /* ── BatchRunner — Run batch with progress + inline report ── */
 
 import { useState } from 'react';
-import { Play, Loader2 } from 'lucide-react';
+import { Play, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useBatchRun, useBatchReport, useAgentStatus } from '../api/client';
 import { formatPaise } from '../types';
 
 export default function BatchRunner() {
-  const [count, setCount] = useState(100);
+  const [count, setCount] = useState(25);
   const [failureRate, setFailureRate] = useState(25);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
 
@@ -30,133 +30,159 @@ export default function BatchRunner() {
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <span className="card-title">Batch Runner</span>
+    <div className="card relative overflow-hidden">
+      <div className="card-header mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#38BDF8]" />
+          <span className="card-title text-[13px] font-bold text-[#F0F6FC]">
+            Autonomous Batch Recovery Engine
+          </span>
+        </div>
+        {activeBatchId && (
+          <span className="text-[11px] font-mono text-[#94A3B8] bg-[#182234] px-2 py-0.5 rounded-[4px] border border-[#222F46]">
+            Batch: {activeBatchId}
+          </span>
+        )}
       </div>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-        {/* Payment count */}
-        <div style={{ flex: '1 1 120px' }}>
-          <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
-            Payment count
-          </label>
-          <input
-            type="number"
-            className="input"
-            min={10}
-            max={200}
-            value={count}
-            onChange={(e) => setCount(Math.min(200, Math.max(10, parseInt(e.target.value) || 10)))}
-            disabled={isRunning}
-          />
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+        {/* Order Count Input + Quick Select Pills */}
+        <div className="md:col-span-4 space-y-1.5">
+          <div className="flex justify-between items-center text-[12px]">
+            <label className="text-[#94A3B8] font-medium">Orders to Seed</label>
+            <span className="font-mono text-[#F0F6FC] font-bold">{count} orders</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {[10, 25, 50, 100].map((c) => (
+              <button
+                key={c}
+                type="button"
+                disabled={isRunning}
+                onClick={() => setCount(c)}
+                className={`flex-1 py-1.5 text-[11px] font-mono font-medium rounded-[4px] border transition-all ${
+                  count === c
+                    ? 'bg-[#38BDF8] border-[#38BDF8] text-white'
+                    : 'bg-[#182234] border-[#222F46] text-[#94A3B8] hover:text-[#F0F6FC]'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Failure rate */}
-        <div style={{ flex: '1 1 160px' }}>
-          <label style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
-            Failure rate: {failureRate}%
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={50}
-            value={failureRate}
-            onChange={(e) => setFailureRate(parseInt(e.target.value))}
-            disabled={isRunning}
-            style={{ width: '100%', accentColor: 'var(--accent)' }}
-          />
+        {/* Failure Rate Slider + Preset Chips */}
+        <div className="md:col-span-5 space-y-1.5">
+          <div className="flex justify-between items-center text-[12px]">
+            <label className="text-[#94A3B8] font-medium">Simulated Failure Rate</label>
+            <span className="font-mono text-[#F59E0B] font-bold">{failureRate}% failures</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={10}
+              max={50}
+              step={5}
+              value={failureRate}
+              onChange={(e) => setFailureRate(parseInt(e.target.value))}
+              disabled={isRunning}
+              className="w-full h-2 bg-[#182234] rounded-lg appearance-none cursor-pointer accent-[#38BDF8]"
+            />
+            <span className="text-[11px] font-mono text-[#566782] min-w-[36px]">
+              {Math.round((count * failureRate) / 100)} fails
+            </span>
+          </div>
         </div>
 
-        {/* Run button */}
-        <button
-          className="btn btn-primary"
-          onClick={handleRun}
-          disabled={isRunning}
-          style={{ height: 36 }}
-        >
-          {isRunning ? (
-            <>
-              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-              Running...
-            </>
-          ) : (
-            <>
-              <Play size={14} />
-              Run Batch
-            </>
-          )}
-        </button>
+        {/* Run Batch Action Button */}
+        <div className="md:col-span-3">
+          <button
+            type="button"
+            className="w-full btn btn-primary py-2 text-[13px] flex items-center justify-center gap-2"
+            onClick={handleRun}
+            disabled={isRunning}
+          >
+            {isRunning ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Agent Running...</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 fill-white" />
+                <span>Execute Batch</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Dynamic Animated Progress Bar */}
       {activeBatchId && !isComplete && (
-        <div style={{ marginTop: 12 }}>
-          <div className="progress-bar">
+        <div className="mt-4 pt-3 border-t border-[#1A2538] space-y-1.5">
+          <div className="w-full h-2 bg-[#182234] rounded-full overflow-hidden relative">
             <div
-              className="progress-fill"
+              className="h-full bg-gradient-to-r from-[#38BDF8] to-[#10B981] transition-all duration-500 rounded-full"
               style={{
-                width: isRunning ? '60%' : '100%',
-                animation: isRunning ? 'none' : undefined,
+                width: isRunning ? '75%' : '100%',
+                animation: isRunning ? 'pulse 1.5s infinite' : undefined,
               }}
             />
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
-            {agentStatus?.is_running
-              ? `Processing... ${agentStatus.queue_size} remaining`
-              : 'Seeding payments...'}
+          <div className="flex justify-between text-[11px] text-[#94A3B8] font-mono">
+            <span>
+              {agentStatus?.is_running
+                ? `Agent classifying & minting Razorpay links... (${agentStatus.queue_size || 0} left in queue)`
+                : 'Seeding test orders in Razorpay...'}
+            </span>
+            <span className="text-[#38BDF8] animate-pulse">Live Telemetry Active</span>
           </div>
         </div>
       )}
 
-      {/* Batch Report */}
+      {/* Completed Batch Inline Summary Report */}
       {report && isComplete && (
-        <div className="batch-report">
-          <div className="report-big-number" style={{ color: 'var(--status-recovered)' }}>
-            {report.recovery_rate}
-          </div>
-          <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
-            Recovery Rate · {formatPaise(report.money_recovered_paise)} recovered of {formatPaise(report.money_at_risk_paise)} at risk
+        <div className="mt-4 pt-4 border-t border-[#222F46] bg-[#090D16]/60 -mx-4 -mb-4 p-4 rounded-b-[10px]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
+              <span className="text-[#F0F6FC] text-[13px] font-bold">
+                Batch #{report.batch_id} Complete
+              </span>
+            </div>
+            <span className="text-[#10B981] font-mono font-bold text-[14px]">
+              {report.recovery_rate} Recovery Rate
+            </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            <div style={{ textAlign: 'center', padding: 12, background: 'var(--bg-base)', borderRadius: 'var(--radius-sm)' }}>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--status-recovered)' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+            <div className="bg-[#101623] border border-[#222F46] p-2.5 rounded-[6px]">
+              <div className="text-[18px] font-mono font-bold text-[#10B981]">
                 {report.recovered}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Recovered</div>
+              <div className="text-[10px] text-[#94A3B8] uppercase">Recovered</div>
             </div>
-            <div style={{ textAlign: 'center', padding: 12, background: 'var(--bg-base)', borderRadius: 'var(--radius-sm)' }}>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--status-escalated)' }}>
+            <div className="bg-[#101623] border border-[#222F46] p-2.5 rounded-[6px]">
+              <div className="text-[18px] font-mono font-bold text-[#F59E0B]">
                 {report.escalated}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Escalated</div>
+              <div className="text-[10px] text-[#94A3B8] uppercase">Escalated</div>
             </div>
-            <div style={{ textAlign: 'center', padding: 12, background: 'var(--bg-base)', borderRadius: 'var(--radius-sm)' }}>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--status-exhausted)' }}>
+            <div className="bg-[#101623] border border-[#222F46] p-2.5 rounded-[6px]">
+              <div className="text-[18px] font-mono font-bold text-[#EF4444]">
                 {report.exhausted}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Exhausted</div>
+              <div className="text-[10px] text-[#94A3B8] uppercase">Exhausted</div>
             </div>
-          </div>
-
-          {/* Failure breakdown */}
-          <div style={{ marginTop: 12, fontSize: 12, color: 'var(--text-secondary)' }}>
-            <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              Failure Types
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-              <span>SOFT: {report.failure_breakdown.SOFT}</span>
-              <span>HARD: {report.failure_breakdown.HARD}</span>
-              <span>UPI_HANDOFF: {report.failure_breakdown.UPI_HANDOFF}</span>
-              <span>SESSION_TIMEOUT: {report.failure_breakdown.SESSION_TIMEOUT}</span>
+            <div className="bg-[#101623] border border-[#222F46] p-2.5 rounded-[6px]">
+              <div className="text-[16px] font-mono font-bold text-[#38BDF8]">
+                {formatPaise(report.money_recovered_paise)}
+              </div>
+              <div className="text-[10px] text-[#94A3B8] uppercase">Money Saved</div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Spinner keyframes */}
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

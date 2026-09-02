@@ -3,6 +3,7 @@ Batch Router — seed payment batches and retrieve reports.
 """
 
 import uuid
+import json
 import random
 import asyncio
 import logging
@@ -192,10 +193,20 @@ async def _seed_and_run_batch(batch_id: str, count: int, failure_rate: float):
     await db.commit()
     logger.info("Batch %s: %d orders seeded, %d failures", batch_id, count, num_failures)
 
-    # Now run the agent on this batch
-    await payment_monitor.run_agent_loop(batch_id=batch_id)
-
-    logger.info("Batch %s: agent loop completed", batch_id)
+    try:
+        # Now run the agent on this batch
+        await payment_monitor.run_agent_loop(batch_id=batch_id)
+        logger.info("Batch %s: agent loop completed", batch_id)
+    except Exception as e:
+        logger.error("Batch %s: agent loop error: %s", batch_id, e)
+    finally:
+        # Guarantee batch is marked as completed
+        await db.execute(
+            "UPDATE batches SET status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE batch_id = ?",
+            (batch_id,),
+        )
+        await db.commit()
+        logger.info("Batch %s: status set to completed", batch_id)
 
 
 @router.post("/run")

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   LayoutDashboard,
+  Smartphone,
   ScrollText,
   SlidersHorizontal,
   Zap,
@@ -12,6 +13,7 @@ import {
 import Dashboard from './pages/Dashboard';
 import AuditPage from './pages/AuditPage';
 import { PolicyStudioPage } from './pages/PolicyStudioPage';
+import { SimulatorPage } from './pages/SimulatorPage';
 import { useAgentStatus } from './api/client';
 
 const queryClient = new QueryClient({
@@ -23,7 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-type Page = 'dashboard' | 'audit' | 'policy';
+type Page = 'dashboard' | 'simulator' | 'policy' | 'audit';
 
 function AgentIndicator() {
   const { data } = useAgentStatus();
@@ -73,6 +75,13 @@ function AppContent() {
             Dashboard
           </div>
           <div
+            className={`sidebar-link ${page === 'simulator' ? 'active' : ''}`}
+            onClick={() => setPage('simulator')}
+          >
+            <Smartphone size={16} />
+            Phone Simulator
+          </div>
+          <div
             className={`sidebar-link ${page === 'policy' ? 'active' : ''}`}
             onClick={() => setPage('policy')}
           >
@@ -100,6 +109,7 @@ function AppContent() {
       {/* Main Content */}
       <main className="main-content">
         {page === 'dashboard' && <Dashboard />}
+        {page === 'simulator' && <SimulatorPage />}
         {page === 'policy' && <PolicyStudioPage />}
         {page === 'audit' && <AuditPage />}
       </main>

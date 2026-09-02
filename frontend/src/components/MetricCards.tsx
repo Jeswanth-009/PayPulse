@@ -1,4 +1,4 @@
-/* ── MetricCards — 4 key metrics with counter animation ── */
+/* ── MetricCards — 4 key metrics with counter animation & glowing accents ── */
 
 import { useEffect, useRef, useState } from 'react';
 import { TrendingUp, AlertTriangle, XCircle, Zap } from 'lucide-react';
@@ -58,53 +58,78 @@ export default function MetricCards({
   recoveryRate,
 }: MetricCardsProps) {
   return (
-    <div className="metrics-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
       {/* Total Failures */}
-      <div className="metric-card">
-        <div className="metric-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Zap size={14} style={{ color: 'var(--status-exhausted)' }} />
-          Failures Detected
+      <div className="metric-card relative border-t-2 border-t-[#38BDF8]">
+        <div className="flex items-center justify-between">
+          <div className="metric-label flex items-center gap-1.5 text-[#94A3B8]">
+            <Zap size={14} className="text-[#38BDF8]" />
+            <span>Failures Intercepted</span>
+          </div>
+          <span className="text-[10px] font-mono text-[#38BDF8] bg-[#38BDF8]/10 px-1.5 py-0.5 rounded-[4px]">
+            100% Tracked
+          </span>
         </div>
-        <div className="metric-value" style={{ color: 'var(--text-primary)' }}>
+        <div className="metric-value text-[#F0F6FC] mt-1">
           <AnimatedNumber value={totalFailures} />
         </div>
-        <div className="metric-sublabel">{formatPaise(moneyAtRisk)} at risk</div>
+        <div className="metric-sublabel text-[#566782] font-mono">
+          {formatPaise(moneyAtRisk)} at risk
+        </div>
       </div>
 
       {/* Recovered */}
-      <div className="metric-card">
-        <div className="metric-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <TrendingUp size={14} style={{ color: 'var(--status-recovered)' }} />
-          Recovered
+      <div className="metric-card relative border-t-2 border-t-[#10B981] shadow-lg shadow-[#10B981]/5">
+        <div className="flex items-center justify-between">
+          <div className="metric-label flex items-center gap-1.5 text-[#10B981] font-semibold">
+            <TrendingUp size={14} />
+            <span>Money Recovered</span>
+          </div>
+          <span className="text-[10px] font-mono text-[#10B981] bg-[#10B981]/15 px-2 py-0.5 rounded-[4px] font-bold">
+            {recoveryRate} Rate
+          </span>
         </div>
-        <div className="metric-value" style={{ color: 'var(--status-recovered)' }}>
+        <div className="metric-value text-[#10B981] mt-1">
           <AnimatedNumber value={recovered} />
+          <span className="text-[14px] text-[#94A3B8] font-normal ml-1">orders</span>
         </div>
-        <div className="metric-sublabel">{formatPaise(moneyRecovered)} saved · {recoveryRate}</div>
+        <div className="metric-sublabel text-[#10B981]/80 font-mono font-medium">
+          {formatPaise(moneyRecovered)} saved
+        </div>
       </div>
 
       {/* Escalated */}
-      <div className="metric-card">
-        <div className="metric-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <AlertTriangle size={14} style={{ color: 'var(--status-escalated)' }} />
-          Escalated
+      <div className="metric-card relative border-t-2 border-t-[#F59E0B]">
+        <div className="flex items-center justify-between">
+          <div className="metric-label flex items-center gap-1.5 text-[#94A3B8]">
+            <AlertTriangle size={14} className="text-[#F59E0B]" />
+            <span>Escalated (Human Review)</span>
+          </div>
+          <span className="text-[10px] font-mono text-[#F59E0B] bg-[#F59E0B]/10 px-1.5 py-0.5 rounded-[4px]">
+            High-Value
+          </span>
         </div>
-        <div className="metric-value" style={{ color: 'var(--status-escalated)' }}>
+        <div className="metric-value text-[#F59E0B] mt-1">
           <AnimatedNumber value={escalated} />
         </div>
-        <div className="metric-sublabel">flagged for review</div>
+        <div className="metric-sublabel text-[#566782]">flagged by policy guardrails</div>
       </div>
 
       {/* Exhausted */}
-      <div className="metric-card">
-        <div className="metric-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <XCircle size={14} style={{ color: 'var(--status-exhausted)' }} />
-          Exhausted
+      <div className="metric-card relative border-t-2 border-t-[#EF4444]">
+        <div className="flex items-center justify-between">
+          <div className="metric-label flex items-center gap-1.5 text-[#94A3B8]">
+            <XCircle size={14} className="text-[#EF4444]" />
+            <span>Exhausted / Stopped</span>
+          </div>
+          <span className="text-[10px] font-mono text-[#EF4444] bg-[#EF4444]/10 px-1.5 py-0.5 rounded-[4px]">
+            Stopping Rule
+          </span>
         </div>
-        <div className="metric-value" style={{ color: 'var(--status-exhausted)' }}>
+        <div className="metric-value text-[#EF4444] mt-1">
           <AnimatedNumber value={exhausted} />
         </div>
-        <div className="metric-sublabel">recovery stopped</div>
+        <div className="metric-sublabel text-[#566782]">max retry limit enforced</div>
       </div>
     </div>
   );
