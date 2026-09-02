@@ -5,16 +5,25 @@ For each order, simulates a payment attempt with a specified failure pattern.
 Writes all orders to the database so PayPulse can track them.
 
 Usage:
-    python -m backend.scripts.seed_batch --count 100 --failure-rate 0.25
+    python -m backend.scripts.seed_batch --count 10 --failure-rate 0.25 [--run-agent]
 """
 
 import argparse
 import asyncio
+import json
 import random
 import uuid
 import sys
 import os
 from pathlib import Path
+
+# Force UTF-8 on Windows consoles to prevent UnicodeEncodeError with ₹ or symbols
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -22,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from backend.config import settings
 from backend.database import init_db, get_db, close_db
 from backend.services.razorpay_client import razorpay_client
+from backend.services.monitor import payment_monitor
 
 # Same failure scenarios as batch router
 FAILURE_SCENARIOS = [
@@ -54,7 +64,7 @@ AMOUNT_RANGES = [
 ]
 
 
-async def seed_batch(count: int, failure_rate: float):
+async def seed_batch(count: int, failure_rate: float, run_agent: bool = False):
     """Create a batch of orders with simulated failures."""
     await init_db()
     db = await get_db()
@@ -107,11 +117,11 @@ async def seed_batch(count: int, failure_rate: float):
             scenario = random.choice(FAILURE_SCENARIOS)
             status = "failed"
             failures += 1
-            print(f"  [{i+1:3d}/{count}] ✗ {payment_id}  ₹{amount_paise/100:>10,.2f}  {scenario['method']:>10}  {scenario['error_code']}")
+            print(f"  [{i+1:3d}/{count}] [FAIL] {payment_id}  Rs.{amount_paise/100:>9,.2f}  {scenario['method']:>10}  {scenario['error_code']}")
         else:
             scenario = {"error_code": None, "error_description": None, "error_source": None, "method": random.choice(["card", "upi", "netbanking", "wallet"])}
             status = "captured"
-            print(f"  [{i+1:3d}/{count}] ✓ {payment_id}  ₹{amount_paise/100:>10,.2f}  {scenario['method']:>10}  captured")
+            print(f"  [{i+1:3d}/{count}] [ OK ] {payment_id}  Rs.{amount_paise/100:>9,.2f}  {scenario['method']:>10}  captured")
 
         order_notes_str = json.dumps({"language_hint": customer["lang"]})
 
@@ -141,6 +151,11 @@ async def seed_batch(count: int, failure_rate: float):
     print(f"  Batch ID: {batch_id}")
     print(f"{'='*60}\n")
 
+    if run_agent:
+        print("Running AI agent recovery loop on this batch...")
+        await payment_monitor.run_agent_loop(batch_id=batch_id)
+        print("Agent loop completed.")
+
     await close_db()
     return batch_id
 
@@ -149,16 +164,17 @@ def main():
     parser = argparse.ArgumentParser(description="PayPulse Batch Seeder")
     parser.add_argument("--count", type=int, default=100, help="Number of orders to create")
     parser.add_argument("--failure-rate", type=float, default=0.25, help="Fraction of orders that fail (0–0.5)")
+    parser.add_argument("--run-agent", action="store_true", help="Immediately run the agent loop after seeding")
     args = parser.parse_args()
 
     if not 0 <= args.failure_rate <= 0.5:
         print("Error: failure-rate must be between 0 and 0.5")
         sys.exit(1)
-    if not 10 <= args.count <= 200:
-        print("Error: count must be between 10 and 200")
+    if not 1 <= args.count <= 200:
+        print("Error: count must be between 1 and 200")
         sys.exit(1)
 
-    asyncio.run(seed_batch(args.count, args.failure_rate))
+    asyncio.run(seed_batch(args.count, args.failure_rate, args.run_agent))
 
 
 if __name__ == "__main__":
