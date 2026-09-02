@@ -38,11 +38,14 @@ FAILURE_SCENARIOS = [
 ]
 
 DEMO_CUSTOMERS = [
-    {"email": "aarav.sharma@example.com", "contact": "+919876543210"},
-    {"email": "priya.patel@example.com", "contact": "+919876543211"},
-    {"email": "vikram.singh@example.com", "contact": "+919876543212"},
-    {"email": "ananya.gupta@example.com", "contact": "+919876543213"},
-    {"email": "rohan.mehta@example.com", "contact": "+919876543214"},
+    {"name": "Priya Sharma", "email": "priya.sharma@example.com", "contact": "+919876543210", "lang": "hi"},
+    {"name": "Rahul Verma", "email": "rahul.verma@example.com", "contact": "+919876543211", "lang": "hi"},
+    {"name": "Ananya Singh", "email": "ananya.singh@example.com", "contact": "+919876543212", "lang": "hi"},
+    {"name": "Karan Mehta", "email": "karan.mehta@example.com", "contact": "+919876543213", "lang": "en"},
+    {"name": "Divya Nair", "email": "divya.nair@example.com", "contact": "+919876543214", "lang": "hi"},
+    {"name": "Arjun Patel", "email": "arjun.patel@example.com", "contact": "+919876543215", "lang": "en"},
+    {"name": "Sneha Reddy", "email": "sneha.reddy@example.com", "contact": "+919876543216", "lang": "hi"},
+    {"name": "Vikram Joshi", "email": "vikram.joshi@example.com", "contact": "+919876543217", "lang": "en"},
 ]
 
 AMOUNT_RANGES = [
@@ -88,7 +91,7 @@ async def seed_batch(count: int, failure_rate: float):
         order_result = razorpay_client.create_order(
             amount_paise=amount_paise,
             receipt=receipt,
-            notes={"batch_id": batch_id, "index": str(i)},
+            notes={"batch_id": batch_id, "index": str(i), "customer_name": customer["name"], "language_hint": customer["lang"]},
         )
 
         if order_result["success"]:
@@ -110,18 +113,22 @@ async def seed_batch(count: int, failure_rate: float):
             status = "captured"
             print(f"  [{i+1:3d}/{count}] ✓ {payment_id}  ₹{amount_paise/100:>10,.2f}  {scenario['method']:>10}  captured")
 
+        order_notes_str = json.dumps({"language_hint": customer["lang"]})
+
         await db.execute(
             """
             INSERT INTO payments
                 (payment_id, order_id, batch_id, amount_paise, currency, method,
                  status, error_code, error_description, error_source,
-                 attempts, recovery_attempts, customer_email, customer_contact)
-            VALUES (?, ?, ?, ?, 'INR', ?, ?, ?, ?, ?, 1, 0, ?, ?)
+                 attempts, recovery_attempts, customer_email, customer_contact,
+                 customer_name, order_notes)
+            VALUES (?, ?, ?, ?, 'INR', ?, ?, ?, ?, ?, 1, 0, ?, ?, ?, ?)
             """,
             (
                 payment_id, order_id, batch_id, amount_paise, scenario["method"],
                 status, scenario.get("error_code"), scenario.get("error_description"),
                 scenario.get("error_source"), customer["email"], customer["contact"],
+                customer["name"], order_notes_str,
             ),
         )
         created += 1

@@ -95,3 +95,54 @@ The SQL query was filtering out only `outcome IN ('exhausted', 'escalated')`. Be
 
 **What fixed it:**
 Updated the monitor query to exclude `dispatched` payments (`outcome IN ('exhausted', 'escalated', 'dispatched')`), ensuring each failure gets exactly one autonomous recovery action per failure cycle unless explicitly re-triggered or updated with a new failure event.
+
+---
+
+## Issue #6: SQLite Schema Migration on Pre-Existing Local Database
+
+**What I was trying to do:**
+Add `customer_name` and `order_notes` columns to the `payments` table to enable personalized Hinglish customer recovery messaging.
+
+**What actually happened:**
+`CREATE TABLE IF NOT EXISTS` doesn't modify existing tables. During `failure_studio.fire`, SQLite raised:
+```
+sqlite3.OperationalError: table payments has no column named customer_name
+```
+
+**How long it took to diagnose:**
+1 minute (from task execution trace).
+
+**What fixed it:**
+Added automatic, non-destructive `ALTER TABLE payments ADD COLUMN ...` migration blocks wrapped in `try/except` within `init_db()` in `backend/database.py`.
+
+---
+
+## Issue #7: Framer Motion Channel Switching and AnimatePresence in Phone Simulator
+
+**What I was trying to do:**
+Switch between WhatsApp and SMS preview screens inside the Phone Simulator drawer.
+
+**What actually happened:**
+Without specifying animation layout bounds and `mode="wait"`, both WhatsApp and SMS viewports momentarily rendered on top of each other, expanding the phone screen past its 360px fixed viewport during transitions.
+
+**How long it took to diagnose:**
+2 minutes (during frontend build inspection).
+
+**What fixed it:**
+Configured `<AnimatePresence mode="wait">` with distinct `key="whatsapp"` and `key="sms"` properties on the top-level motion containers, guaranteeing a clean 150ms cross-fade without layout shifting.
+
+---
+
+## Issue #8: Recovery Rate Parsing in ROI Calculator
+
+**What I was trying to do:**
+Dynamically source the merchant recovery rate from the latest batch run report for the annualized revenue calculation.
+
+**What actually happened:**
+The backend `BatchReport` returns formatted recovery rate strings (e.g. `"66.67%"`). Performing arithmetic directly caused TypeScript compiler errors (`The left-hand side of an arithmetic operation must be of type 'number'`).
+
+**How long it took to diagnose:**
+1 minute (TypeScript build compiler).
+
+**What fixed it:**
+Implemented regex sanitization `parseFloat(batchReport.recovery_rate.replace('%', '')) / 100` with fallback to `0.60`, cleanly feeding into the logarithmic GMV slider math.

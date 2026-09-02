@@ -49,6 +49,8 @@ class Payment(BaseModel):
     failure_type: Optional[str] = None
     customer_email: Optional[str] = None
     customer_contact: Optional[str] = None
+    customer_name: Optional[str] = None
+    order_notes: Optional[str] = None
     notes: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

@@ -86,13 +86,15 @@ app.add_middleware(
 )
 
 # Mount routers
-from backend.routers import payments, agent, batch, audit, webhook
+from backend.routers import payments, agent, batch, audit, webhook, config, studio
 
 app.include_router(payments.router)
 app.include_router(agent.router)
 app.include_router(batch.router)
 app.include_router(audit.router)
 app.include_router(webhook.router)
+app.include_router(config.router)
+app.include_router(studio.router)
 
 
 @app.get("/health")

@@ -1,8 +1,8 @@
 """
-Payments Router — GET endpoints for payment data.
+Payments Router — GET endpoints for payment data and customer recovery messages.
 """
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException, Depends
 from typing import Optional
 from backend.database import get_db
 from backend.models.payment import Payment, PaymentListResponse, PaymentDetailResponse
@@ -77,7 +77,6 @@ async def get_payment(payment_id: str):
     row = await cursor.fetchone()
 
     if not row:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Payment not found")
 
     payment = Payment(**dict(row))
@@ -87,3 +86,18 @@ async def get_payment(payment_id: str):
         payment=payment,
         audit_entries=audit_entries,
     )
+
+
+@router.get("/{payment_id}/message")
+async def get_recovery_message(payment_id: str, db=Depends(get_db)):
+    """Get the customer-facing WhatsApp & SMS recovery message generated for this payment."""
+    cursor = await db.execute(
+        "SELECT * FROM recovery_messages WHERE payment_id = ?", (payment_id,)
+    )
+    row = await cursor.fetchone()
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail="No message for this payment. STOP and ESCALATE actions do not generate messages."
+        )
+    return dict(row)

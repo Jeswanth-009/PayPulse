@@ -168,19 +168,24 @@ async def _seed_and_run_batch(batch_id: str, count: int, failure_rate: float):
             error_source = None
             method = random.choice(["card", "upi", "netbanking", "wallet"])
 
+        lang = random.choice(["hi", "en", "hi"])
+        order_notes_str = json.dumps({"language_hint": lang})
+
         # Insert into local DB
         await db.execute(
             """
             INSERT INTO payments
                 (payment_id, order_id, batch_id, amount_paise, currency, method,
                  status, error_code, error_description, error_source,
-                 attempts, recovery_attempts, customer_email, customer_contact)
-            VALUES (?, ?, ?, ?, 'INR', ?, ?, ?, ?, ?, 1, 0, ?, ?)
+                 attempts, recovery_attempts, customer_email, customer_contact,
+                 customer_name, order_notes)
+            VALUES (?, ?, ?, ?, 'INR', ?, ?, ?, ?, ?, 1, 0, ?, ?, ?, ?)
             """,
             (
                 payment_id, order_id, batch_id, amount_paise, method,
                 status, error_code, error_description, error_source,
                 customer["email"], customer["contact"],
+                customer["name"], order_notes_str,
             ),
         )
 

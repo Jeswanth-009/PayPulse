@@ -126,3 +126,107 @@ export function useAuditFeed() {
 export function exportAuditCSV() {
   window.open(`${API_BASE}/api/v1/audit/export`, '_blank');
 }
+
+/* ── Config (Policy Studio) ── */
+export interface MerchantConfigItem {
+  key: string;
+  value: string;
+  label: string;
+  description: string;
+  value_type: string;
+  updated_at: string;
+}
+
+export function useMerchantConfig() {
+  return useQuery<MerchantConfigItem[]>({
+    queryKey: ['merchantConfig'],
+    queryFn: () => api.get('/api/v1/config').then(r => r.data),
+  });
+}
+
+export function useUpdateConfig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string }) =>
+      api.put(`/api/v1/config/${key}`, { value }).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['merchantConfig'] });
+    },
+  });
+}
+
+/* ── Failure Studio ── */
+export interface StudioPreset {
+  key: string;
+  label: string;
+  amount_rupees: number;
+  method: string;
+  description: string;
+  error_code: string;
+  customer_name: string;
+  language_hint: string;
+}
+
+export interface StudioFireResponse {
+  payment_id: string;
+  order_id: string;
+  preset?: string;
+  classification: {
+    failure_type: string;
+    confidence: number;
+    reasoning: string;
+    recommended_action: string;
+    recovery_message_hint?: string;
+  };
+  action_taken: string;
+  outcome: string;
+  payment_link_url?: string;
+  audit_entries: any[];
+}
+
+export function useStudioPresets() {
+  return useQuery<StudioPreset[]>({
+    queryKey: ['studioPresets'],
+    queryFn: () => api.get('/api/v1/studio/presets').then(r => r.data),
+  });
+}
+
+export function useStudioFire() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { preset?: string; custom?: any }) =>
+      api.post('/api/v1/studio/fire', body, { timeout: 35000 }).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['audit'] });
+      queryClient.invalidateQueries({ queryKey: ['auditFeed'] });
+      queryClient.invalidateQueries({ queryKey: ['agentStatus'] });
+    },
+  });
+}
+
+/* ── Recovery Messages ── */
+export interface RecoveryMessage {
+  id: number;
+  payment_id: string;
+  order_id: string;
+  whatsapp_message: string;
+  sms_message: string;
+  tone: string;
+  personalization_note?: string;
+  payment_link_url: string;
+  source: string;
+  customer_name?: string;
+  amount_rupees?: number;
+  created_at: string;
+}
+
+export function useRecoveryMessage(paymentId: string | null) {
+  return useQuery<RecoveryMessage>({
+    queryKey: ['recoveryMessage', paymentId],
+    queryFn: () => api.get(`/api/v1/payments/${paymentId}/message`).then(r => r.data),
+    enabled: !!paymentId,
+    retry: false,
+  });
+}
+

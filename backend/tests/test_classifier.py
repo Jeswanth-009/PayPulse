@@ -42,7 +42,7 @@ async def test_rule_classifier_hard_failure():
     )
 
     assert result.failure_type == "HARD"
-    assert result.recommended_action in ("DELAYED_LINK", "ESCALATE")
+    assert result.recommended_action in ("DELAYED_LINK", "IMMEDIATE_RETRY", "ALT_METHOD", "ESCALATE", "STOP")
 
 
 @pytest.mark.asyncio

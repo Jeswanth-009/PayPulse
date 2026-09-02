@@ -5,11 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   LayoutDashboard,
   ScrollText,
+  SlidersHorizontal,
   Zap,
   Heart,
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import AuditPage from './pages/AuditPage';
+import { PolicyStudioPage } from './pages/PolicyStudioPage';
 import { useAgentStatus } from './api/client';
 
 const queryClient = new QueryClient({
@@ -21,7 +23,7 @@ const queryClient = new QueryClient({
   },
 });
 
-type Page = 'dashboard' | 'audit';
+type Page = 'dashboard' | 'audit' | 'policy';
 
 function AgentIndicator() {
   const { data } = useAgentStatus();
@@ -71,6 +73,13 @@ function AppContent() {
             Dashboard
           </div>
           <div
+            className={`sidebar-link ${page === 'policy' ? 'active' : ''}`}
+            onClick={() => setPage('policy')}
+          >
+            <SlidersHorizontal size={16} />
+            Policy Studio
+          </div>
+          <div
             className={`sidebar-link ${page === 'audit' ? 'active' : ''}`}
             onClick={() => setPage('audit')}
           >
@@ -91,6 +100,7 @@ function AppContent() {
       {/* Main Content */}
       <main className="main-content">
         {page === 'dashboard' && <Dashboard />}
+        {page === 'policy' && <PolicyStudioPage />}
         {page === 'audit' && <AuditPage />}
       </main>
 
