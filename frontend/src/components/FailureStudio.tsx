@@ -338,6 +338,16 @@ export const FailureStudio: React.FC<FailureStudioProps> = ({
                             </div>
                           </div>
                         )}
+
+                        {/* Direct Jump to Phone Simulator */}
+                        <button
+                          type="button"
+                          onClick={() => onSelectPayment?.(res.payment_id)}
+                          className="w-full mt-2 bg-[#21262D] hover:bg-[#30363D] border border-[#3395FF]/40 text-[#58A6FF] text-[11px] font-medium py-1.5 px-3 rounded-[4px] flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                        >
+                          <Smartphone className="w-3.5 h-3.5 text-[#3395FF]" />
+                          <span>View in Phone Simulator (WhatsApp / SMS)</span>
+                        </button>
                       </motion.div>
                     ))}
                 </div>

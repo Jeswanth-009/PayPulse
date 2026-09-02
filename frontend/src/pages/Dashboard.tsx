@@ -1,7 +1,7 @@
 /* ── Dashboard — Main view: Agent Feed + Metrics + ROI Calculator + Charts + Failure Studio ── */
 
 import { useState, useMemo } from 'react';
-import { FlaskConical } from 'lucide-react';
+import { FlaskConical, Smartphone } from 'lucide-react';
 import MetricCards from '../components/MetricCards';
 import AgentFeed from '../components/AgentFeed';
 import BatchRunner from '../components/BatchRunner';
@@ -81,6 +81,23 @@ export default function Dashboard() {
           <BatchRunner />
         </div>
         <div className="shrink-0 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const latestWithLink = feedEntries.find((e) => e.action_taken && e.action_taken !== 'STOP');
+              if (latestWithLink) {
+                setSelectedPaymentId(latestWithLink.payment_id);
+              } else if (feedEntries[0]) {
+                setSelectedPaymentId(feedEntries[0].payment_id);
+              } else {
+                setIsStudioOpen(true);
+              }
+            }}
+            className="flex items-center gap-2 bg-[#21262D] hover:bg-[#30363D] text-[#E6EDF3] border border-[#30363D] text-[13px] font-medium py-2 px-3.5 rounded-[4px] shadow-xs transition-colors"
+          >
+            <Smartphone className="w-4 h-4 text-[#3FB950]" />
+            <span>Phone Simulator</span>
+          </button>
           <button
             type="button"
             onClick={() => setIsStudioOpen(true)}

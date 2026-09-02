@@ -14,15 +14,23 @@ import { PhoneSimulator } from './PhoneSimulator';
 
 interface PaymentDetailDrawerProps {
   paymentId: string | null;
+  initialTab?: 'classification' | 'recovery' | 'message';
   onClose: () => void;
 }
 
 export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
   paymentId,
+  initialTab = 'message',
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'classification' | 'recovery' | 'message'>('classification');
+  const [activeTab, setActiveTab] = useState<'classification' | 'recovery' | 'message'>(initialTab);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, paymentId]);
 
   const { data: detailData, isLoading: isPaymentLoading } = usePayment(paymentId || '');
   const { data: messageData, isLoading: isMessageLoading } = useRecoveryMessage(paymentId);

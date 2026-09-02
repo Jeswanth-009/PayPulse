@@ -74,6 +74,9 @@ export default function AgentFeed({ onSelect }: AgentFeedProps) {
                   <span className={`badge ${getOutcomeBadgeClass(entry.outcome)}`}>
                     {(entry.outcome || 'pending').toUpperCase()}
                   </span>
+                  <span className="text-[10px] bg-[#21262D] text-[#58A6FF] border border-[#3395FF]/30 px-1.5 py-0.5 rounded-[4px] font-mono flex items-center gap-1 hover:bg-[#3395FF] hover:text-white transition-colors ml-auto">
+                    📱 Simulator
+                  </span>
                 </div>
                 {entry.llm_reasoning && (
                   <div className="feed-reasoning">
