@@ -1,4 +1,4 @@
-/* ── Dashboard — Main view: Agent Feed + Metrics + ROI Calculator + Charts + Failure Studio ── */
+/* ── Dashboard v3.0 — Main view: Agent Feed + Metrics + ROI Calculator + Clean Fluid Grid ── */
 
 import { useState, useMemo } from 'react';
 import { FlaskConical, Smartphone, ShoppingBag } from 'lucide-react';
@@ -84,15 +84,15 @@ export default function Dashboard({ onOpenStorefront }: DashboardProps) {
   const feedEntries = feedData?.entries || [];
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1440px] mx-auto">
-      {/* Action Strip: Quick Triggers */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#101623] border border-[#222F46] p-3.5 px-4 rounded-[10px] shadow-sm">
+    <div className="flex flex-col gap-6 max-w-[1400px] mx-auto w-full pb-10">
+      {/* Top Action Strip */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#101623] border border-[#222F46] p-3.5 px-4 rounded-[12px] shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-          <span className="text-[#F0F6FC] text-[13px] font-semibold">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
+          <span className="text-[#F0F6FC] text-[13px] font-bold">
             Autonomous Recovery Engine Active
           </span>
-          <span className="text-[11px] font-mono text-[#94A3B8]">
+          <span className="hidden md:inline text-[11px] font-mono text-[#94A3B8]">
             · Monitoring Razorpay webhook & polling stream
           </span>
         </div>
@@ -136,7 +136,7 @@ export default function Dashboard({ onOpenStorefront }: DashboardProps) {
         </div>
       </div>
 
-      {/* Hero Metric Cards */}
+      {/* 1. Hero Metric Cards */}
       <MetricCards
         totalFailures={metrics.totalFailures}
         recovered={metrics.recovered}
@@ -147,22 +147,23 @@ export default function Dashboard({ onOpenStorefront }: DashboardProps) {
         recoveryRate={metrics.recoveryRate}
       />
 
-      {/* Autonomous Batch Execution Engine */}
+      {/* 2. Autonomous Batch Execution Engine */}
       <BatchRunner />
 
-      {/* Command Center: Live Feed & Analytics Grid */}
-      <div className="dashboard-grid">
-        {/* Left Column: Live Agent Feed */}
-        <div className="h-[480px]">
+      {/* 3. Command Center: Balanced 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Left Column (7 cols): Live Agent Feed */}
+        <div className="lg:col-span-7 min-h-[500px] flex flex-col">
           <AgentFeed onSelect={setSelectedPaymentId} />
         </div>
 
-        {/* Right Column: Analytics & Visualization */}
-        <div className="flex flex-col gap-3.5 h-[480px]">
-          <div className="flex-1 min-h-0">
-            <PaymentChart entries={feedEntries} />
-          </div>
-          <div className="charts-grid h-[210px] shrink-0">
+        {/* Right Column (5 cols): Visual Analytics */}
+        <div className="lg:col-span-5 flex flex-col gap-4">
+          {/* Recovery Timeline */}
+          <PaymentChart entries={feedEntries} />
+
+          {/* Breakdown & Outcomes Side-by-Side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FailureBreakdown data={metrics.breakdown} />
             <RecoveryDonut
               recovered={metrics.recovered}
@@ -173,7 +174,7 @@ export default function Dashboard({ onOpenStorefront }: DashboardProps) {
         </div>
       </div>
 
-      {/* Bottom Section: Merchant ROI Projection Simulator */}
+      {/* 4. Projected Revenue Recovery (ROI Simulator) */}
       <div className="pt-2">
         <ROICalculator />
       </div>
@@ -188,7 +189,7 @@ export default function Dashboard({ onOpenStorefront }: DashboardProps) {
         }}
       />
 
-      {/* Payment Inspector / Customer Experience Drawer */}
+      {/* Payment Inspector Drawer */}
       <PaymentDetailDrawer
         paymentId={selectedPaymentId}
         onClose={() => setSelectedPaymentId(null)}

@@ -1,9 +1,11 @@
+/* ── ROICalculator v3.0 — Interactive Projected Revenue Recovery & Annual ROI Model ── */
+
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, Calculator } from 'lucide-react';
+import { TrendingUp, Calculator, ArrowUpRight, Zap } from 'lucide-react';
 import { useBatches, useBatchReport } from '../api/client';
 
 export const ROICalculator: React.FC = () => {
-  const [sliderVal, setSliderVal] = useState<number>(33.33); // Defaults around ₹2.3 Crores
+  const [sliderVal, setSliderVal] = useState<number>(33.33); // Defaults around ₹2.3 Crores GMV
 
   const { data: batchesData } = useBatches();
   const latestBatch = batchesData?.batches?.[0];
@@ -23,7 +25,7 @@ export const ROICalculator: React.FC = () => {
 
   const monthlyGmv = useMemo(() => sliderToGmv(sliderVal), [sliderVal]);
 
-  const INDUSTRY_FAILURE_RATE = 0.075; // 7.5% RBI average
+  const INDUSTRY_FAILURE_RATE = 0.075; // 7.5% RBI average dropout rate
   const monthlyFailures = useMemo(() => monthlyGmv * INDUSTRY_FAILURE_RATE, [monthlyGmv]);
   const monthlyRecovered = useMemo(() => monthlyFailures * recoveryRate, [monthlyFailures, recoveryRate]);
   const annualRecovered = useMemo(() => monthlyRecovered * 12, [monthlyRecovered]);
@@ -35,29 +37,39 @@ export const ROICalculator: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#161B22] border border-[#30363D] rounded-[6px] p-6 shadow-sm">
+    <div className="bg-[#101623] border border-[#222F46] rounded-[12px] p-6 shadow-xl space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-[#3395FF]" />
-          <h3 className="text-[#E6EDF3] text-[15px] font-semibold">
-            Merchant Revenue Impact & Annual ROI
-          </h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1A2538] pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-[8px] bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8]">
+            <Calculator className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-[#F0F6FC] text-[15px] font-bold">
+              Merchant Revenue Impact & Annual ROI Projection
+            </h3>
+            <p className="text-[#94A3B8] text-[11px]">
+              Estimate reclaimed top-line revenue based on autonomous dropout conversion.
+            </p>
+          </div>
         </div>
-        <span className="text-[#8B949E] text-[11px] font-mono bg-[#0D1117] border border-[#30363D] px-2.5 py-1 rounded-[4px] flex items-center gap-1.5">
-          <TrendingUp className="w-3 h-3 text-[#3FB950]" />
-          Recovery Rate: {(recoveryRate * 100).toFixed(0)}%
-        </span>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[#94A3B8] text-[11px] font-mono bg-[#182234] border border-[#222F46] px-3 py-1 rounded-[6px] flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5 text-[#10B981]" />
+            <span>Agent Conversion: <strong className="text-[#10B981]">{(recoveryRate * 100).toFixed(0)}%</strong></span>
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        {/* Left 38%: GMV Slider */}
-        <div className="md:col-span-5 space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        {/* Left (5 cols): GMV Range Slider */}
+        <div className="lg:col-span-5 space-y-3 bg-[#182234] p-4.5 rounded-[10px] border border-[#222F46]">
           <div className="flex justify-between items-baseline">
-            <span className="text-[#8B949E] text-[12px] font-medium">Monthly Processing GMV</span>
-            <span className="text-[#E6EDF3] text-[22px] font-bold font-mono tracking-tight">
+            <span className="text-[#94A3B8] text-[12px] font-medium">Monthly Processing GMV</span>
+            <span className="text-[#F0F6FC] text-[22px] font-bold font-mono tracking-tight text-[#38BDF8]">
               {formatRupees(monthlyGmv)}
-              <span className="text-[#8B949E] text-[12px] font-normal"> /mo</span>
+              <span className="text-[#94A3B8] text-[12px] font-normal"> /mo</span>
             </span>
           </div>
 
@@ -70,62 +82,66 @@ export const ROICalculator: React.FC = () => {
               step="0.5"
               value={sliderVal}
               onChange={(e) => setSliderVal(parseFloat(e.target.value))}
-              className="w-full h-2 bg-[#21262D] rounded-lg appearance-none cursor-pointer accent-[#3395FF]"
+              className="w-full h-2 bg-[#101623] rounded-lg appearance-none cursor-pointer accent-[#38BDF8]"
             />
-            <div className="flex justify-between text-[#484F58] text-[11px] mt-1.5 font-mono">
-              <span>₹10 Lakhs</span>
-              <span>₹1 Crore</span>
-              <span>₹10 Crores</span>
-              <span>₹100 Crores</span>
+            <div className="flex justify-between text-[#566782] text-[10px] mt-1.5 font-mono">
+              <span>₹10 L</span>
+              <span>₹1 Cr</span>
+              <span>₹10 Cr</span>
+              <span>₹100 Cr</span>
             </div>
+          </div>
+
+          <div className="text-[11px] font-mono text-[#566782] pt-1">
+            *Assumes RBI average 7.5% payment failure rate
           </div>
         </div>
 
-        {/* Vertical Divider */}
-        <div className="hidden md:block md:col-span-1 text-center">
-          <div className="w-[1px] h-20 bg-[#30363D] mx-auto" />
-        </div>
-
-        {/* Right 58%: Output Cards */}
-        <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Card A: Annual Recovered */}
-          <div className="bg-[#0D1117] border border-[#30363D] rounded-[6px] p-4 flex flex-col justify-between">
-            <div>
-              <span className="text-[#8B949E] text-[11px] uppercase tracking-wider font-medium block">
-                Annual Revenue Recovered
+        {/* Right (7 cols): Projection Output Cards */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card 1: Annual Reclaimed */}
+          <div className="bg-[#182234] border border-[#10B981]/40 rounded-[10px] p-4.5 flex flex-col justify-between shadow-lg shadow-[#10B981]/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[#94A3B8] text-[11px] uppercase tracking-wider font-bold block">
+                Annual Projected Recovery
               </span>
-              <div className="text-[#3FB950] text-[26px] font-bold font-mono tracking-tight mt-1">
-                {formatRupees(annualRecovered)}
-                <span className="text-[12px] text-[#3FB950]/80 font-normal"> /yr</span>
-              </div>
+              <span className="text-[#10B981]">
+                <ArrowUpRight size={14} />
+              </span>
             </div>
-            <p className="text-[#484F58] text-[11px] mt-2 italic leading-tight">
-              at {(recoveryRate * 100).toFixed(0)}% recovery rate · live batch benchmark
-            </p>
+
+            <div className="text-[#10B981] text-[28px] font-extrabold font-mono tracking-tight my-1">
+              {formatRupees(annualRecovered)}
+              <span className="text-[12px] text-[#10B981]/80 font-normal"> /year</span>
+            </div>
+
+            <span className="text-[11px] text-[#566782] font-mono">
+              Net reclaimed revenue directly into merchant bank
+            </span>
           </div>
 
-          {/* Card B: Monthly Failures Intercepted */}
-          <div className="bg-[#0D1117] border border-[#30363D] rounded-[6px] p-4 flex flex-col justify-between">
-            <div>
-              <span className="text-[#8B949E] text-[11px] uppercase tracking-wider font-medium block">
-                Monthly Failures Intercepted
+          {/* Card 2: Monthly Recovered */}
+          <div className="bg-[#182234] border border-[#38BDF8]/40 rounded-[10px] p-4.5 flex flex-col justify-between shadow-lg shadow-[#38BDF8]/5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[#94A3B8] text-[11px] uppercase tracking-wider font-bold block">
+                Monthly Saved GMV
               </span>
-              <div className="text-[#E6EDF3] text-[22px] font-bold font-mono tracking-tight mt-1">
-                {formatRupees(monthlyFailures)}
-                <span className="text-[12px] text-[#8B949E] font-normal"> /mo</span>
-              </div>
+              <span className="text-[#38BDF8]">
+                <Zap size={14} />
+              </span>
             </div>
-            <p className="text-[#484F58] text-[11px] mt-2 italic leading-tight">
-              7.5% Indian e-commerce failure rate (RBI standard)
-            </p>
+
+            <div className="text-[#38BDF8] text-[28px] font-extrabold font-mono tracking-tight my-1">
+              {formatRupees(monthlyRecovered)}
+              <span className="text-[12px] text-[#38BDF8]/80 font-normal"> /month</span>
+            </div>
+
+            <span className="text-[11px] text-[#566782] font-mono">
+              ~{Math.round((monthlyRecovered / (monthlyGmv || 1)) * 100 * 10) / 10}% top-line GMV boost
+            </span>
           </div>
         </div>
       </div>
-
-      {/* Footer Benchmark Note */}
-      <p className="text-[#484F58] text-[11px] italic mt-4 border-t border-[#21262D] pt-3">
-        Recovery rate dynamically updated from agent telemetry. Industry baseline: 7.5% payment dropoff (RBI Payment System Indicators).
-      </p>
     </div>
   );
 };
