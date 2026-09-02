@@ -1,3 +1,5 @@
+/* ── StorefrontModal v3.0 — Ultra-Modern Interactive Storefront & Autonomous Recovery Demo ── */
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -11,46 +13,69 @@ import {
   Loader2,
   ArrowRight,
   ExternalLink,
+  ShieldCheck,
+  Star,
+  Truck,
+  RotateCcw,
+  QrCode,
+  Zap,
+  Check,
 } from 'lucide-react';
 import { useStudioFire, useSimulatePay } from '../api/client';
 
 interface Product {
   id: string;
   name: string;
+  tagline: string;
   price: number;
   originalPrice: number;
-  image: string;
+  rating: number;
+  reviews: number;
   badge: string;
   category: string;
+  color: string;
+  features: string[];
 }
 
 const DEMO_PRODUCTS: Product[] = [
   {
     id: 'prod_1',
     name: 'Titanium Apex Smartwatch Pro',
+    tagline: 'Military-Grade Titanium · 1.96" AMOLED · Dual GPS',
     price: 2499,
     originalPrice: 4999,
-    image: '⌚',
+    rating: 4.9,
+    reviews: 1420,
     badge: 'Best Seller',
-    category: 'Wearables',
+    category: 'Flagship Wearable',
+    color: 'Space Black',
+    features: ['14-Day Battery', 'Sapphire Glass', '5ATM Waterproof'],
   },
   {
     id: 'prod_2',
-    name: 'SonicPro Hybrid ANC Headphones',
+    name: 'SonicPro Spatial ANC Headphones',
+    tagline: 'Lossless Audio · 45dB Active Noise Cancellation',
     price: 4999,
     originalPrice: 9999,
-    image: '🎧',
-    badge: 'Popular',
-    category: 'Audio',
+    rating: 4.8,
+    reviews: 890,
+    badge: 'Editor Choice',
+    category: 'Studio Acoustics',
+    color: 'Midnight Silver',
+    features: ['Spatial Audio', '40mm Beryllium Drivers', '60hr Playtime'],
   },
   {
     id: 'prod_3',
-    name: 'UrbanCraft Tech Commuter Pack',
+    name: 'UrbanCraft Nomad Backpack',
+    tagline: 'Waterproof Cordura® · Integrated TSA Lock · 28L',
     price: 1499,
     originalPrice: 2999,
-    image: '🎒',
+    rating: 4.9,
+    reviews: 2310,
     badge: 'Trending',
-    category: 'Accessories',
+    category: 'Travel & Tech',
+    color: 'Matte Obsidian',
+    features: ['16" Laptop Sleeve', 'USB Charging Port', 'Ergonomic AirMesh'],
   },
 ];
 
@@ -67,7 +92,8 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product>(DEMO_PRODUCTS[0]);
   const [customerName, setCustomerName] = useState('Priya Sharma');
-  const [customerContact, setCustomerContact] = useState('+919876543210');
+  const [customerContact, setCustomerContact] = useState('+91 98765 43210');
+  const [checkoutMethod, setCheckoutMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
   const [step, setStep] = useState<'catalog' | 'checkout' | 'failure' | 'recovered'>('catalog');
   const [interceptedResult, setInterceptedResult] = useState<any | null>(null);
 
@@ -78,11 +104,8 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
 
   const handleTriggerFailure = async (presetKey: string) => {
     setStep('failure');
-
     try {
-      const result = await studioFire.mutateAsync({
-        preset: presetKey,
-      });
+      const result = await studioFire.mutateAsync({ preset: presetKey });
       setInterceptedResult(result);
     } catch (err) {
       console.error('Failed to trigger failure:', err);
@@ -105,37 +128,39 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-xl">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        initial={{ opacity: 0, scale: 0.96, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="bg-[#101623] border border-[#222F46] rounded-[14px] w-full max-w-[860px] max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col relative"
+        exit={{ opacity: 0, scale: 0.96, y: 15 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="bg-[#090D16] border border-[#222F46] rounded-[18px] w-full max-w-[940px] max-h-[92vh] overflow-y-auto shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col relative"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 px-6 border-b border-[#222F46] bg-[#090D16]/50">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-[#38BDF8]/15 border border-[#38BDF8]/30 p-2 rounded-[8px]">
-              <ShoppingBag className="w-5 h-5 text-[#38BDF8]" />
+        {/* Top Navbar */}
+        <div className="flex items-center justify-between p-4 px-6 border-b border-[#1A2538] bg-[#0E1524]/90 sticky top-0 z-20 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[10px] bg-gradient-to-tr from-[#38BDF8] to-[#3B82F6] flex items-center justify-center shadow-lg shadow-[#38BDF8]/20">
+              <ShoppingBag className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[#F0F6FC] text-[16px] font-bold">
-                  Interactive Merchant Storefront Demo
+                <span className="text-[#F0F6FC] text-[15px] font-bold tracking-tight">
+                  LUMEN AUDIO & TECH STORE
                 </span>
                 <span className="text-[10px] font-mono font-bold bg-[#10B981]/15 text-[#10B981] px-2 py-0.5 rounded-[4px] border border-[#10B981]/30">
-                  Live End-to-End Flow
+                  Interactive Demo
                 </span>
               </div>
-              <span className="text-[#94A3B8] text-[12px]">
-                Simulate a real checkout dropout and experience PayPulse recover it in under 3 seconds.
+              <span className="text-[#94A3B8] text-[11px] block">
+                Razorpay Checkout Sandbox · Powered by PayPulse Autonomous Recovery
               </span>
             </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="text-[#566782] hover:text-[#F0F6FC] p-1.5 rounded-[6px] hover:bg-[#182234] transition-colors"
+            className="text-[#94A3B8] hover:text-[#F0F6FC] p-2 rounded-[8px] hover:bg-[#182234] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -143,176 +168,295 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-6 space-y-6">
-          {/* STEP 1: CATALOG VIEW */}
+          {/* STEP 1: PREMIUM STOREFRONT CATALOG */}
           {step === 'catalog' && (
-            <div className="space-y-5">
-              <div className="flex justify-between items-center">
-                <span className="text-[#94A3B8] text-[12px] font-bold uppercase tracking-wider">
-                  Select a Product to Checkout
-                </span>
-                <span className="text-[#38BDF8] text-[12px] font-mono">
-                  Store: UrbanStore India (Demo)
-                </span>
+            <div className="space-y-6">
+              {/* Promo Banner */}
+              <div className="bg-gradient-to-r from-[#182234] via-[#101E35] to-[#182234] border border-[#38BDF8]/30 rounded-[12px] p-4 px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold bg-[#38BDF8] text-black px-2 py-0.5 rounded-[3px] uppercase">
+                      Flash Sale
+                    </span>
+                    <span className="text-[#F0F6FC] font-bold text-[13px]">
+                      50% OFF All Flagship Gear
+                    </span>
+                  </div>
+                  <p className="text-[#94A3B8] text-[11px]">
+                    Select an item below to simulate a real-time checkout failure and watch PayPulse recover it instantly.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-[11px] font-mono text-[#566782]">
+                  <span className="flex items-center gap-1 text-[#10B981]">
+                    <Truck size={13} /> Free Express Delivery
+                  </span>
+                </div>
               </div>
 
+              {/* Product Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {DEMO_PRODUCTS.map((product) => {
-                  const isSelected = selectedProduct.id === product.id;
+                {DEMO_PRODUCTS.map((prod) => {
+                  const isSelected = selectedProduct.id === prod.id;
                   return (
                     <div
-                      key={product.id}
-                      onClick={() => setSelectedProduct(product)}
-                      className={`p-4 rounded-[10px] border cursor-pointer transition-all relative ${
+                      key={prod.id}
+                      onClick={() => setSelectedProduct(prod)}
+                      className={`p-5 rounded-[14px] border cursor-pointer transition-all relative flex flex-col justify-between ${
                         isSelected
-                          ? 'bg-[#182234] border-[#38BDF8] shadow-lg shadow-[#38BDF8]/10 ring-1 ring-[#38BDF8]'
-                          : 'bg-[#101623] border-[#222F46] hover:border-[#566782] hover:bg-[#182234]/40'
+                          ? 'bg-[#101A2D] border-[#38BDF8] shadow-xl shadow-[#38BDF8]/15 ring-2 ring-[#38BDF8]'
+                          : 'bg-[#101623] border-[#222F46] hover:border-[#566782] hover:bg-[#141D2E]'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-4xl">{product.image}</span>
-                        <span className="text-[10px] font-bold font-mono bg-[#38BDF8]/10 text-[#38BDF8] px-2 py-0.5 rounded-[4px]">
-                          {product.badge}
+                      <div>
+                        {/* Badge & Rating */}
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-[10px] font-mono font-bold bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30 px-2 py-0.5 rounded-[4px]">
+                            {prod.badge}
+                          </span>
+                          <div className="flex items-center gap-1 text-[11px] font-mono text-[#F59E0B]">
+                            <Star size={12} className="fill-[#F59E0B]" />
+                            <span className="font-bold">{prod.rating}</span>
+                            <span className="text-[#566782]">({prod.reviews})</span>
+                          </div>
+                        </div>
+
+                        {/* Title & Tagline */}
+                        <span className="text-[#566782] text-[10px] font-mono uppercase font-bold tracking-wider block">
+                          {prod.category}
                         </span>
+                        <h3 className="text-[#F0F6FC] text-[15px] font-bold mt-0.5 leading-snug">
+                          {prod.name}
+                        </h3>
+                        <p className="text-[#94A3B8] text-[11px] mt-1 line-clamp-2 leading-relaxed">
+                          {prod.tagline}
+                        </p>
+
+                        {/* Feature Pills */}
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {prod.features.map((f) => (
+                            <span
+                              key={f}
+                              className="text-[10px] font-mono bg-[#182234] text-[#94A3B8] px-2 py-0.5 rounded-[4px] border border-[#222F46]"
+                            >
+                              ✓ {f}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <span className="text-[#566782] text-[11px] font-medium uppercase block">
-                        {product.category}
-                      </span>
-                      <h3 className="text-[#F0F6FC] text-[14px] font-bold mt-0.5 line-clamp-1">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-baseline gap-2 mt-2">
-                        <span className="text-[#10B981] font-mono text-[16px] font-bold">
-                          ₹{product.price.toLocaleString('en-IN')}
-                        </span>
-                        <span className="text-[#566782] font-mono text-[12px] line-through">
-                          ₹{product.originalPrice.toLocaleString('en-IN')}
-                        </span>
+
+                      {/* Pricing & Selection Strip */}
+                      <div className="mt-5 pt-3 border-t border-[#1A2538] flex items-center justify-between">
+                        <div>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-[#10B981] font-mono text-[18px] font-extrabold">
+                              ₹{prod.price.toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[#566782] font-mono text-[12px] line-through">
+                              ₹{prod.originalPrice.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-[#10B981] font-mono">Inclusive of GST</span>
+                        </div>
+
+                        <div
+                          className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all ${
+                            isSelected
+                              ? 'bg-[#38BDF8] border-[#38BDF8] text-white shadow-md'
+                              : 'border-[#222F46] bg-[#182234]'
+                          }`}
+                        >
+                          {isSelected && <Check size={14} className="text-black font-bold" />}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Customer input row */}
-              <div className="bg-[#182234] border border-[#222F46] p-4 rounded-[10px] grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[#94A3B8] text-[11px] font-medium block mb-1">
-                    Buyer Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full bg-[#101623] border border-[#222F46] text-[#F0F6FC] text-[13px] px-3 py-2 rounded-[6px] focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[#94A3B8] text-[11px] font-medium block mb-1">
-                    WhatsApp / Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    value={customerContact}
-                    onChange={(e) => setCustomerContact(e.target.value)}
-                    className="w-full bg-[#101623] border border-[#222F46] text-[#F0F6FC] text-[13px] px-3 py-2 rounded-[6px] font-mono focus:outline-none focus:border-[#38BDF8]"
-                  />
+              {/* Customer Checkout Form */}
+              <div className="bg-[#101623] border border-[#222F46] rounded-[12px] p-5 space-y-4">
+                <span className="text-[#94A3B8] text-[12px] font-bold uppercase tracking-wider block">
+                  Customer Shipping & WhatsApp Recovery Destination
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[#94A3B8] text-[11px] font-medium block mb-1.5">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full bg-[#182234] border border-[#222F46] text-[#F0F6FC] text-[13px] px-3.5 py-2.5 rounded-[8px] focus:outline-none focus:border-[#38BDF8] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#94A3B8] text-[11px] font-medium block mb-1.5">
+                      WhatsApp Phone Number (For Instant AI Recovery)
+                    </label>
+                    <input
+                      type="text"
+                      value={customerContact}
+                      onChange={(e) => setCustomerContact(e.target.value)}
+                      className="w-full bg-[#182234] border border-[#222F46] text-[#F0F6FC] text-[13px] px-3.5 py-2.5 rounded-[8px] font-mono focus:outline-none focus:border-[#38BDF8] transition-colors"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              {/* Proceed to Razorpay Checkout CTA */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="flex items-center gap-2 text-[11px] text-[#566782] font-mono">
+                  <ShieldCheck size={14} className="text-[#10B981]" />
+                  <span>256-Bit SSL Encrypted Razorpay Sandbox Checkout</span>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => setStep('checkout')}
-                  className="btn btn-primary py-2.5 px-6 text-[14px] flex items-center gap-2"
+                  className="btn btn-primary py-3 px-8 text-[14px] flex items-center justify-center gap-2 shadow-xl shadow-[#38BDF8]/25 cursor-pointer"
                 >
-                  <span>Proceed to Razorpay Checkout (₹{selectedProduct.price})</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Proceed to Razorpay Checkout (₹{selectedProduct.price.toLocaleString('en-IN')})</span>
+                  <ArrowRight size={16} />
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: SIMULATED RAZORPAY CHECKOUT WITH FAILURE TRIGGERS */}
+          {/* STEP 2: SIMULATED RAZORPAY PAYMENT SHEET */}
           {step === 'checkout' && (
-            <div className="space-y-5">
-              <div className="bg-[#090D16] border border-[#3395FF]/40 rounded-[12px] p-5 shadow-xl relative overflow-hidden">
-                <div className="flex items-center justify-between border-b border-[#222F46] pb-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[14px] text-[#3395FF]">Razorpay</span>
-                    <span className="text-[11px] bg-[#3395FF]/10 text-[#3395FF] px-1.5 py-0.5 rounded-[4px] font-mono">
-                      Test Mode
+            <div className="space-y-6 max-w-[680px] mx-auto">
+              <div className="bg-[#090D16] border-2 border-[#3395FF]/60 rounded-[16px] shadow-2xl overflow-hidden">
+                {/* Razorpay Brand Header */}
+                <div className="bg-[#0C1527] p-4 px-6 border-b border-[#1A2538] flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-[6px] bg-[#3395FF] flex items-center justify-center font-extrabold text-white text-[14px]">
+                      R
+                    </div>
+                    <div>
+                      <span className="font-bold text-[#F0F6FC] text-[14px] block leading-none">
+                        Razorpay Standard Checkout
+                      </span>
+                      <span className="text-[10px] font-mono text-[#3395FF]">Testnet Environment</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[#94A3B8] text-[10px] block">Amount Due</span>
+                    <span className="text-[#F0F6FC] font-mono font-extrabold text-[16px]">
+                      ₹{selectedProduct.price.toLocaleString('en-IN')}
                     </span>
                   </div>
-                  <span className="text-[#F0F6FC] font-mono font-bold text-[15px]">
-                    ₹{selectedProduct.price.toLocaleString('en-IN')}
-                  </span>
                 </div>
 
-                <p className="text-[#94A3B8] text-[12px] mb-4">
-                  Simulate how an actual checkout failure behaves. Choose a failure condition to test PayPulse&apos;s autonomous AI response:
-                </p>
+                {/* Simulated Payment Methods Strip */}
+                <div className="p-5 space-y-5">
+                  <div className="flex border-b border-[#222F46] gap-2 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setCheckoutMethod('upi')}
+                      className={`pb-2 px-3 text-[12px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        checkoutMethod === 'upi'
+                          ? 'text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                          : 'text-[#94A3B8] hover:text-[#F0F6FC]'
+                      }`}
+                    >
+                      <Smartphone size={14} /> UPI / QR Code
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCheckoutMethod('card')}
+                      className={`pb-2 px-3 text-[12px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        checkoutMethod === 'card'
+                          ? 'text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                          : 'text-[#94A3B8] hover:text-[#F0F6FC]'
+                      }`}
+                    >
+                      <CreditCard size={14} /> Cards
+                    </button>
+                  </div>
 
-                {/* Failure Simulator Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    disabled={studioFire.isPending}
-                    onClick={() => handleTriggerFailure('bank_timeout')}
-                    className="p-3.5 rounded-[8px] bg-[#182234] border border-[#F59E0B]/40 hover:border-[#F59E0B] text-left hover:bg-[#202D44] transition-all group"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <CreditCard className="w-4 h-4 text-[#F59E0B]" />
-                      <span className="text-[#F0F6FC] text-[12px] font-bold">
-                        Bank Server Timeout
-                      </span>
+                  {/* Payment Simulator Box */}
+                  <div className="bg-[#101623] border border-[#222F46] rounded-[10px] p-4 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center mx-auto text-[#38BDF8]">
+                      <QrCode size={24} />
                     </div>
-                    <span className="text-[#94A3B8] text-[11px] block leading-snug">
-                      Simulates transient HDFC/SBI bank gateway failure during card verification.
-                    </span>
-                    <span className="text-[#F59E0B] text-[10px] font-mono font-semibold mt-2 inline-block">
-                      Trigger Failure ➔
-                    </span>
-                  </button>
+                    <div>
+                      <h4 className="text-[#F0F6FC] font-bold text-[14px]">
+                        Scan to Pay or Authorize via App
+                      </h4>
+                      <p className="text-[#94A3B8] text-[11px] max-w-[340px] mx-auto mt-0.5">
+                        Order #{Math.floor(100000 + Math.random() * 900000)} · Paying to Lumen Tech Store
+                      </p>
+                    </div>
+                  </div>
 
-                  <button
-                    type="button"
-                    disabled={studioFire.isPending}
-                    onClick={() => handleTriggerFailure('upi_dropped')}
-                    className="p-3.5 rounded-[8px] bg-[#182234] border border-[#38BDF8]/40 hover:border-[#38BDF8] text-left hover:bg-[#202D44] transition-all group"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Smartphone className="w-4 h-4 text-[#38BDF8]" />
-                      <span className="text-[#F0F6FC] text-[12px] font-bold">
-                        UPI PSP Dropped
+                  {/* FAILURE INJECTION TESTER BAR */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#F59E0B] text-[12px] font-bold flex items-center gap-1.5">
+                        <Zap size={14} />
+                        Simulate Payment Dropout Condition:
                       </span>
+                      <span className="text-[10px] font-mono text-[#566782]">Choose 1 to test</span>
                     </div>
-                    <span className="text-[#94A3B8] text-[11px] block leading-snug">
-                      Simulates GPay/PhonePe collect timeout without customer approval.
-                    </span>
-                    <span className="text-[#38BDF8] text-[10px] font-mono font-semibold mt-2 inline-block">
-                      Trigger Failure ➔
-                    </span>
-                  </button>
 
-                  <button
-                    type="button"
-                    disabled={studioFire.isPending}
-                    onClick={() => handleTriggerFailure('card_declined')}
-                    className="p-3.5 rounded-[8px] bg-[#182234] border border-[#EF4444]/40 hover:border-[#EF4444] text-left hover:bg-[#202D44] transition-all group"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className="w-4 h-4 text-[#EF4444]" />
-                      <span className="text-[#F0F6FC] text-[12px] font-bold">
-                        Card Declined
-                      </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <button
+                        type="button"
+                        disabled={studioFire.isPending}
+                        onClick={() => handleTriggerFailure('bank_timeout')}
+                        className="p-3.5 rounded-[10px] bg-[#182234] border border-[#F59E0B]/40 hover:border-[#F59E0B] text-left hover:bg-[#202D44] transition-all group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-1.5 text-[#F59E0B] font-bold text-[12px] mb-1">
+                          <CreditCard size={14} />
+                          <span>Bank Timeout</span>
+                        </div>
+                        <p className="text-[#94A3B8] text-[11px] leading-snug">
+                          HDFC/SBI server timeout during OTP auth.
+                        </p>
+                        <span className="text-[#F59E0B] text-[10px] font-mono font-bold mt-2 inline-block group-hover:translate-x-1 transition-transform">
+                          Trigger Timeout ➔
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={studioFire.isPending}
+                        onClick={() => handleTriggerFailure('upi_dropped')}
+                        className="p-3.5 rounded-[10px] bg-[#182234] border border-[#38BDF8]/40 hover:border-[#38BDF8] text-left hover:bg-[#202D44] transition-all group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-1.5 text-[#38BDF8] font-bold text-[12px] mb-1">
+                          <Smartphone size={14} />
+                          <span>UPI Dropped</span>
+                        </div>
+                        <p className="text-[#94A3B8] text-[11px] leading-snug">
+                          GPay/PhonePe collect timeout without approval.
+                        </p>
+                        <span className="text-[#38BDF8] text-[10px] font-mono font-bold mt-2 inline-block group-hover:translate-x-1 transition-transform">
+                          Trigger Drop ➔
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={studioFire.isPending}
+                        onClick={() => handleTriggerFailure('card_declined')}
+                        className="p-3.5 rounded-[10px] bg-[#182234] border border-[#EF4444]/40 hover:border-[#EF4444] text-left hover:bg-[#202D44] transition-all group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-1.5 text-[#EF4444] font-bold text-[12px] mb-1">
+                          <AlertTriangle size={14} />
+                          <span>Card Declined</span>
+                        </div>
+                        <p className="text-[#94A3B8] text-[11px] leading-snug">
+                          Hard limit decline triggering alternate method.
+                        </p>
+                        <span className="text-[#EF4444] text-[10px] font-mono font-bold mt-2 inline-block group-hover:translate-x-1 transition-transform">
+                          Trigger Decline ➔
+                        </span>
+                      </button>
                     </div>
-                    <span className="text-[#94A3B8] text-[11px] block leading-snug">
-                      Simulates hard card decline requiring alternative payment method link.
-                    </span>
-                    <span className="text-[#EF4444] text-[10px] font-mono font-semibold mt-2 inline-block">
-                      Trigger Failure ➔
-                    </span>
-                  </button>
+                  </div>
                 </div>
               </div>
 
@@ -320,7 +464,7 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setStep('catalog')}
-                  className="btn btn-secondary text-[12px]"
+                  className="btn btn-secondary text-[12px] py-2 px-4 cursor-pointer"
                 >
                   ← Back to Storefront
                 </button>
@@ -328,51 +472,54 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
             </div>
           )}
 
-          {/* STEP 3: FAILURE INTERCEPTED & AUTONOMOUS RECOVERY */}
+          {/* STEP 3: FAILURE INTERCEPTED & INSTANT AI RECOVERY */}
           {step === 'failure' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {studioFire.isPending || !interceptedResult ? (
-                <div className="py-12 flex flex-col items-center justify-center gap-3 text-center">
-                  <Loader2 className="w-8 h-8 text-[#38BDF8] animate-spin" />
-                  <div>
-                    <h3 className="text-[#F0F6FC] text-[15px] font-bold">
-                      Payment Failure Intercepted by PayPulse...
+                <div className="py-14 flex flex-col items-center justify-center gap-4 text-center">
+                  <div className="relative">
+                    <Loader2 className="w-12 h-12 text-[#38BDF8] animate-spin" />
+                    <Sparkles className="w-5 h-5 text-[#10B981] absolute -top-1 -right-1 animate-ping" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-[#F0F6FC] text-[17px] font-bold">
+                      Payment Failure Intercepted by PayPulse Autonomous Engine...
                     </h3>
-                    <p className="text-[#94A3B8] text-[12px] mt-1 font-mono">
-                      Diagnosing root cause with MiniMax M3 · Generating personalized WhatsApp copy · Minting recovery link
+                    <p className="text-[#94A3B8] text-[12px] font-mono max-w-[480px] mx-auto">
+                      MiniMax M3 diagnosing root cause · Minting single-click Razorpay payment recovery link · Generating Hinglish customer reassurance
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-                  {/* Left: Interception Summary */}
-                  <div className="bg-[#182234] border border-[#222F46] rounded-[10px] p-4 space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#222F46] pb-2">
-                      <span className="text-[#EF4444] text-[12px] font-bold flex items-center gap-1.5">
+                  {/* Left: AI Diagnosis & Recovery Blueprint */}
+                  <div className="bg-[#101623] border border-[#222F46] rounded-[14px] p-5 space-y-4 shadow-xl">
+                    <div className="flex items-center justify-between border-b border-[#1A2538] pb-3">
+                      <span className="text-[#EF4444] text-[13px] font-bold flex items-center gap-1.5">
                         <AlertTriangle className="w-4 h-4" />
-                        Checkout Failed
+                        Dropout Intercepted
                       </span>
-                      <span className="text-[#10B981] text-[11px] font-mono bg-[#10B981]/15 px-2 py-0.5 rounded-[4px] font-bold">
-                        AI Agent Recovered
+                      <span className="text-[#10B981] text-[11px] font-mono bg-[#10B981]/15 border border-[#10B981]/30 px-2.5 py-0.5 rounded-[4px] font-bold">
+                        ⚡ AI Dispatched (&lt;1.8s)
                       </span>
                     </div>
 
-                    <div className="space-y-2 text-[12px]">
+                    <div className="space-y-2.5 text-[12px] font-mono">
                       <div className="flex justify-between">
                         <span className="text-[#94A3B8]">Payment ID:</span>
-                        <span className="font-mono text-[#F0F6FC]">{interceptedResult.payment_id}</span>
+                        <span className="text-[#F0F6FC] font-bold">{interceptedResult.payment_id}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#94A3B8]">Root Cause:</span>
-                        <span className="font-mono text-[#F59E0B] font-semibold">{interceptedResult.classification.failure_type}</span>
+                        <span className="text-[#94A3B8]">Classified Type:</span>
+                        <span className="text-[#F59E0B] font-bold">{interceptedResult.classification.failure_type}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#94A3B8]">Action Taken:</span>
-                        <span className="font-mono text-[#38BDF8] font-semibold">{interceptedResult.action_taken}</span>
+                        <span className="text-[#94A3B8]">Autonomous Action:</span>
+                        <span className="text-[#38BDF8] font-bold">{interceptedResult.action_taken}</span>
                       </div>
                     </div>
 
-                    <div className="bg-[#101623] border-l-2 border-[#38BDF8] p-2.5 rounded-[0_4px_4px_0] text-[11px] text-[#94A3B8] italic">
+                    <div className="bg-[#182234] border-l-2 border-[#38BDF8] p-3 rounded-[0_6px_6px_0] text-[12px] text-[#94A3B8] italic leading-relaxed">
                       &quot;{interceptedResult.classification.reasoning}&quot;
                     </div>
 
@@ -383,48 +530,51 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
                           onClose();
                           onOpenSimulator?.(interceptedResult.payment_id);
                         }}
-                        className="w-full btn btn-secondary text-[12px] py-2 flex items-center justify-center gap-2"
+                        className="w-full btn btn-secondary text-[12px] py-2.5 flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <Smartphone className="w-3.5 h-3.5 text-[#38BDF8]" />
-                        <span>Inspect in Full Phone Simulator</span>
-                        <ExternalLink className="w-3 h-3" />
+                        <Smartphone className="w-4 h-4 text-[#38BDF8]" />
+                        <span>Inspect in Customer Phone Simulator</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Right: Live Customer WhatsApp Message Preview */}
-                  <div className="bg-[#075E54]/20 border border-[#128C7E]/40 rounded-[10px] p-4 space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#128C7E]/30 pb-2">
-                      <div className="flex items-center gap-1.5 text-[#10B981] text-[12px] font-bold">
+                  {/* Right: Customer Live WhatsApp Notification */}
+                  <div className="bg-[#0B141A] border border-[#128C7E]/40 rounded-[14px] p-5 space-y-4 shadow-xl">
+                    <div className="flex items-center justify-between border-b border-[#2A3942] pb-3">
+                      <div className="flex items-center gap-2 text-[#25D366] text-[13px] font-bold">
                         <Smartphone className="w-4 h-4" />
                         <span>Customer&apos;s WhatsApp Notification</span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#566782]">Delivered 10:41 AM</span>
+                      <span className="text-[10px] font-mono text-[#8696A0]">Just Now</span>
                     </div>
 
                     {/* WhatsApp Chat Bubble */}
-                    <div className="bg-[#1F2C34] border border-[#2A3942] rounded-[8px] p-3 text-[12px] text-[#E9EDEF] space-y-2 shadow-md">
-                      <p className="whitespace-pre-line leading-relaxed">
+                    <div className="bg-[#202C33] border border-[#2A3942] rounded-[12px_12px_12px_2px] p-3.5 text-[12px] text-[#E9EDEF] space-y-2 shadow-md">
+                      <p className="whitespace-pre-line leading-relaxed font-sans">
                         {interceptedResult.customer_message?.whatsapp ||
-                          `Hi ${customerName} 👋\n\nAapka ₹${selectedProduct.price} ka payment complete nahi hua — koi baat nahi!\n\nNiche diye link se retry karein:\n${interceptedResult.payment_link_url}`}
+                          `Hi ${customerName} 👋\n\nAapka ₹${selectedProduct.price} ka payment nahi ho paya — koi baat nahi!\n\nNiche diye link se 1-click me complete karein:\n${interceptedResult.payment_link_url}`}
                       </p>
+                      <div className="text-right text-[#8696A0] text-[9px] font-mono">
+                        10:42 AM · <span className="text-[#53BDEB] font-bold">✓✓</span>
+                      </div>
                     </div>
 
-                    {/* Simulate Customer Click & Pay Button */}
+                    {/* 1-Click Customer Payment Resolution */}
                     <button
                       type="button"
                       disabled={simulatePay.isPending}
                       onClick={handleCompleteRecovery}
-                      className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold text-[13px] py-2.5 px-4 rounded-[6px] flex items-center justify-center gap-2 shadow-lg shadow-[#10B981]/25 transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-bold text-[13px] py-3 px-4 rounded-[8px] flex items-center justify-center gap-2 shadow-lg shadow-[#10B981]/25 transition-all cursor-pointer"
                     >
                       {simulatePay.isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Simulating Customer Payment...</span>
+                          <span>Capturing Payment in Razorpay...</span>
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-4 h-4" />
+                          <Zap className="w-4 h-4 fill-white" />
                           <span>Simulate Customer Paying Recovery Link</span>
                         </>
                       )}
@@ -435,39 +585,40 @@ export const StorefrontModal: React.FC<StorefrontModalProps> = ({
             </div>
           )}
 
-          {/* STEP 4: RECOVERED SUCCESS SCREEN */}
+          {/* STEP 4: RECOVERED SUCCESS CELEBRATION */}
           {step === 'recovered' && (
-            <div className="py-8 text-center space-y-4">
-              <div className="w-14 h-14 bg-[#10B981]/20 border border-[#10B981]/40 rounded-full flex items-center justify-center mx-auto text-[#10B981]">
-                <CheckCircle2 className="w-8 h-8" />
+            <div className="py-8 text-center space-y-5 max-w-[540px] mx-auto">
+              <div className="w-16 h-16 bg-[#10B981]/20 border-2 border-[#10B981] rounded-full flex items-center justify-center mx-auto text-[#10B981] shadow-xl shadow-[#10B981]/20">
+                <CheckCircle2 className="w-10 h-10" />
               </div>
 
-              <div>
-                <span className="text-[11px] font-mono font-bold text-[#10B981] uppercase tracking-wider bg-[#10B981]/15 px-2.5 py-1 rounded-[4px] border border-[#10B981]/30">
-                  🎉 100% Autonomous Recovery Succeeded
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono font-bold text-[#10B981] uppercase tracking-wider bg-[#10B981]/15 px-3 py-1 rounded-[4px] border border-[#10B981]/30">
+                  🎉 100% Autonomous Closed-Loop Recovery
                 </span>
-                <h2 className="text-[#F0F6FC] text-[20px] font-bold mt-2">
-                  Order Successfully Paid & Recovered!
+                <h2 className="text-[#F0F6FC] text-[22px] font-bold pt-2">
+                  Order Successfully Captured & Recovered!
                 </h2>
-                <p className="text-[#94A3B8] text-[13px] max-w-[480px] mx-auto mt-1">
-                  The customer paid via the autonomous recovery link. Money saved: <span className="font-mono text-[#10B981] font-bold">₹{selectedProduct.price.toLocaleString('en-IN')}</span>. Dashboard telemetry and Audit Trail updated in real time.
+                <p className="text-[#94A3B8] text-[13px] leading-relaxed">
+                  The customer paid via the recovery link. Reclaimed revenue: <strong className="font-mono text-[#10B981]">₹{selectedProduct.price.toLocaleString('en-IN')}</strong>. Live dashboard metrics, revenue projections, and the Audit Trail were updated in real time.
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className="flex items-center justify-center gap-3 pt-3">
                 <button
                   type="button"
                   onClick={resetFlow}
-                  className="btn btn-secondary text-[13px] py-2 px-4"
+                  className="btn btn-secondary text-[13px] py-2.5 px-5 cursor-pointer"
                 >
-                  Test Another Order
+                  <RotateCcw size={14} />
+                  <span>Test Another Order</span>
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn btn-primary text-[13px] py-2 px-5"
+                  className="btn btn-primary text-[13px] py-2.5 px-6 cursor-pointer"
                 >
-                  View in Dashboard
+                  <span>View in Command Center</span>
                 </button>
               </div>
             </div>
