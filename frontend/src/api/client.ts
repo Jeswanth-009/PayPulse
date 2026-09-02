@@ -46,7 +46,7 @@ export function useAgentStatus() {
   return useQuery<AgentStatus>({
     queryKey: ['agentStatus'],
     queryFn: () => api.get('/api/v1/agent/status').then(r => r.data),
-    refetchInterval: 3000,
+    refetchInterval: 1000,
   });
 }
 
@@ -57,6 +57,7 @@ export function useAgentRun() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agentStatus'] });
       queryClient.invalidateQueries({ queryKey: ['audit'] });
+      queryClient.invalidateQueries({ queryKey: ['auditFeed'] });
       queryClient.invalidateQueries({ queryKey: ['payments'] });
     },
   });
@@ -71,6 +72,8 @@ export function useBatchRun() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['batches'] });
       queryClient.invalidateQueries({ queryKey: ['agentStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['auditFeed'] });
+      queryClient.invalidateQueries({ queryKey: ['audit'] });
     },
   });
 }
@@ -82,7 +85,7 @@ export function useBatchReport(batchId: string | null) {
     enabled: !!batchId,
     refetchInterval: (query) => {
       const data = query.state.data;
-      return data?.status === 'completed' ? false : 3000;
+      return data?.status === 'completed' ? false : 1000;
     },
   });
 }
@@ -91,7 +94,7 @@ export function useBatches() {
   return useQuery<BatchListResponse>({
     queryKey: ['batches'],
     queryFn: () => api.get('/api/v1/batch').then(r => r.data),
-    refetchInterval: 5000,
+    refetchInterval: 3000,
   });
 }
 
@@ -106,7 +109,7 @@ export function useAuditLog(params?: {
   return useQuery<AuditListResponse>({
     queryKey: ['audit', params],
     queryFn: () => api.get('/api/v1/audit', { params }).then(r => r.data),
-    refetchInterval: 5000,
+    refetchInterval: 2000,
   });
 }
 
@@ -119,7 +122,7 @@ export function useAuditFeed() {
           params: { event_type: 'action_taken', limit: 50, page: 1 },
         })
         .then(r => r.data),
-    refetchInterval: 3000,
+    refetchInterval: 1500,
   });
 }
 

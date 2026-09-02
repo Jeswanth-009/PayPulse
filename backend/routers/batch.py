@@ -122,6 +122,10 @@ async def _seed_and_run_batch(batch_id: str, count: int, failure_rate: float):
     db = await get_db()
     num_failures = int(count * failure_rate)
 
+    payment_monitor.is_running = True
+    payment_monitor.current_batch_id = batch_id
+    payment_monitor.queue_size = num_failures
+
     logger.info("Batch %s: creating %d orders (%d failures)", batch_id, count, num_failures)
 
     # Decide which indices will be failures
@@ -200,6 +204,9 @@ async def _seed_and_run_batch(batch_id: str, count: int, failure_rate: float):
     except Exception as e:
         logger.error("Batch %s: agent loop error: %s", batch_id, e)
     finally:
+        payment_monitor.is_running = False
+        payment_monitor.current_batch_id = None
+        payment_monitor.queue_size = 0
         # Guarantee batch is marked as completed
         await db.execute(
             "UPDATE batches SET status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE batch_id = ?",
@@ -215,13 +222,20 @@ async def run_batch(request: BatchRunRequest, background_tasks: BackgroundTasks)
     batch_id = f"batch_{uuid.uuid4().hex[:12]}"
     db = await get_db()
 
+    expected_failures = int(request.count * request.failure_rate)
+
+    # Immediately mark agent active so UI updates synchronously
+    payment_monitor.is_running = True
+    payment_monitor.current_batch_id = batch_id
+    payment_monitor.queue_size = expected_failures
+
     # Create batch record
     await db.execute(
         """
         INSERT INTO batches (batch_id, total_payments, total_failures, failure_rate, status)
         VALUES (?, ?, ?, ?, 'running')
         """,
-        (batch_id, request.count, int(request.count * request.failure_rate), request.failure_rate),
+        (batch_id, request.count, expected_failures, request.failure_rate),
     )
     await db.commit()
 

@@ -1,6 +1,6 @@
 /* ── AuditTrail — Full-width filterable table with row expansion ── */
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { format } from 'date-fns';
 import { ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useAuditLog, exportAuditCSV } from '../api/client';
@@ -102,9 +102,8 @@ export default function AuditTrail() {
                   </td>
                 </tr>
               ) : entries.map((entry) => (
-                <>
+                <Fragment key={entry.id}>
                   <tr
-                    key={entry.id}
                     onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                     style={{ cursor: 'pointer' }}
                     className={expandedId === entry.id ? 'expanded-row' : ''}
@@ -185,7 +184,7 @@ export default function AuditTrail() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

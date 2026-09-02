@@ -29,24 +29,69 @@ type Page = 'dashboard' | 'simulator' | 'policy' | 'audit';
 
 function AgentIndicator() {
   const { data } = useAgentStatus();
-  const isRunning = data?.is_running;
+  const isRunning = Boolean(data?.is_running || (data?.queue_size && data.queue_size > 0));
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      fontSize: 11,
-      color: isRunning ? 'var(--status-progress)' : 'var(--text-muted)',
-    }}>
-      <div style={{
-        width: 6,
-        height: 6,
-        borderRadius: '50%',
-        background: isRunning ? 'var(--status-progress)' : 'var(--text-muted)',
-        animation: isRunning ? 'pulse 1.5s infinite' : 'none',
-      }} />
-      {isRunning ? 'Agent Active' : 'Agent Idle'}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <span style={{ position: 'relative', display: 'flex', width: 8, height: 8 }}>
+          {isRunning ? (
+            <>
+              <span
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  backgroundColor: '#10B981',
+                  opacity: 0.75,
+                  animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+                }}
+              />
+              <span
+                style={{
+                  position: 'relative',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: '#10B981',
+                }}
+              />
+            </>
+          ) : (
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: '#566782',
+              }}
+            />
+          )}
+        </span>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            fontFamily: 'var(--font-mono)',
+            color: isRunning ? '#10B981' : 'var(--text-secondary)',
+          }}
+        >
+          {isRunning ? 'Agent Active' : 'Agent Standby'}
+        </span>
+      </div>
+
+      {isRunning ? (
+        <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#38BDF8', paddingLeft: 15 }}>
+          {data?.current_batch_id
+            ? `Recovering ${data.current_batch_id.slice(0, 10)}...`
+            : `${data?.queue_size || 1} in recovery queue`}
+        </span>
+      ) : (
+        <span style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 15 }}>
+          Polling interval: 30s
+        </span>
+      )}
     </div>
   );
 }
